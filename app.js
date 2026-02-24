@@ -260,7 +260,7 @@
     const time = performance.now() * 0.001;
 
     if (autoRotate && !isDragging) targetCarouselAngle += 0.0015;
-    carouselAngle += (targetCarouselAngle - carouselAngle) * 0.075;
+    carouselAngle += (targetCarouselAngle - carouselAngle) * 0.225;
     layoutCarousel(time);
 
     shelfScene.children.forEach(c => {
