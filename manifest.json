@@ -1,7 +1,7 @@
 {
   "name": "DISC SHELF",
   "short_name": "DISC SHELF",
-  "description": "ひとりでも、つながれる場所。",
+  "description": "アプリを、ディスクで選ぶ。3Dポータルサイト。",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#08080f",

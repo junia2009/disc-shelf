@@ -1,94 +1,61 @@
 /* ============================================
-   DISC SHELF — Application Logic (Three.js 3D Edition)
+   DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
 (() => {
   'use strict';
 
-  // ========== Storage ==========
-  const STORAGE_KEY = 'discshelf_data_v2';
-
-  function _uid() {
-    return Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
-  }
-
-  const defaultDiscs = [
+  // ==========================================================
+  //  APP DATA — ディスク（＝アプリ）一覧
+  //  新しいWebアプリを作るたびに、ここにオブジェクトを追加するだけ！
+  // ==========================================================
+  const DISCS = [
+    // --- サンプル: このアプリ自身 ---
     {
-      id: _uid(), genre: 'おいしいごはん屋さん',
-      description: '街で見つけた最高の一皿。みんなの「ここ行って！」を集めよう。',
-      color: '#FF6584',
-      messages: [
-        { id: _uid(), nick: '食いしん坊', body: '下北沢の裏路地にあるカレー屋「spice note」、マジで人生変わる。チキンカレーにレモン絞って食べてみて。', time: '2026-02-20T10:30:00' },
-        { id: _uid(), nick: '深夜の住人', body: '新宿三丁目の「麺屋 翔」。鶏白湯が胃に染みる。終電逃した夜にぜひ。', time: '2026-02-21T23:45:00' },
-        { id: _uid(), nick: 'ランチ難民', body: '丸の内のOAZOにある「つるとんたん」、うどんのボリュームえぐい。780円で腹パンになれる。', time: '2026-02-22T12:15:00' },
-      ]
-    },
-    {
-      id: _uid(), genre: '最近観た映画',
-      description: '映画館を出たあとの余韻を、ここに置いていこう。',
+      id: 'disc-shelf',
+      name: 'DISC SHELF',
+      description: 'あなたが今見ているこのアプリ。3Dバイナルレコード風UIのポータルサイト。',
       color: '#6C63FF',
-      messages: [
-        { id: _uid(), nick: 'シネマ中毒', body: '「ミッドナイト・ライブラリー」観てきた。自分のif人生を追体験するシーンで泣いた。一人で観に行って正解だった。', time: '2026-02-19T18:00:00' },
-        { id: _uid(), nick: '匿名', body: 'IMAXで「DUNE Part 3」。砂漠の映像美がやばい。音圧で椅子が震えた。', time: '2026-02-23T20:30:00' },
-      ]
+      url: 'https://junia2009.github.io/disc-shelf/',
+      repo: 'https://github.com/junia2009/disc-shelf',
+      tags: ['Three.js', 'Portal', 'PWA'],
     },
-    {
-      id: _uid(), genre: '散歩で見つけたもの',
-      description: '何気ない散歩で出会った小さな発見を書き留めよう。',
-      color: '#43E97B',
-      messages: [
-        { id: _uid(), nick: '朝型人間', body: '代々木公園の南口あたり、朝6時に行くと霧がかかってて異世界感すごい。鳥の声しかしない贅沢。', time: '2026-02-18T06:20:00' },
-        { id: _uid(), nick: '匿名', body: '中目黒の川沿いに猫カフェじゃないのに猫が5匹くらい集まるスポットがある。毎週日曜の夕方。', time: '2026-02-22T16:00:00' },
-      ]
-    },
-    {
-      id: _uid(), genre: '眠れない夜のひとりごと',
-      description: '夜中に浮かんだ言葉、考えごと。誰かに聞いてほしいわけじゃないけど。',
-      color: '#00C9FF',
-      messages: [
-        { id: _uid(), nick: '3時のひと', body: '最近ずっと考えてるんだけど、「退屈」って実はすごく贅沢な感情なんじゃないかな。何も起きてないってことは、平和ってことだから。', time: '2026-02-21T03:14:00' },
-      ]
-    },
+    // --- 今後アプリを作るたびに追加 ---
+    // {
+    //   id: 'my-next-app',
+    //   name: 'My Next App',
+    //   description: 'ここにアプリの説明を書く',
+    //   color: '#FF6584',
+    //   url: 'https://junia2009.github.io/my-next-app/',
+    //   repo: 'https://github.com/junia2009/my-next-app',
+    //   tags: ['React', 'Game'],
+    // },
   ];
 
-  function loadData() {
-    try { const r = localStorage.getItem(STORAGE_KEY); if (r) return JSON.parse(r); } catch {}
-    return null;
-  }
-  function saveData(d) { localStorage.setItem(STORAGE_KEY, JSON.stringify(d)); }
-
-  let discs = loadData() || JSON.parse(JSON.stringify(defaultDiscs));
-  saveData(discs);
-
-  // ========== DOM ==========
+  // ==========================================================
+  //  DOM
+  // ==========================================================
   const $ = (s, p = document) => p.querySelector(s);
   const $$ = (s, p = document) => [...p.querySelectorAll(s)];
 
-  const shelfView = $('#shelf-view');
-  const discView = $('#disc-view');
-  const messagesList = $('#messages-list');
-  const modalDisc = $('#modal-disc');
-  const modalMsg = $('#modal-msg');
-  const formDisc = $('#form-disc');
-  const formMsg = $('#form-msg');
-  const btnAddDisc = $('#btn-add-disc');
-  const btnAddMsg = $('#btn-add-msg');
-  const btnBack = $('#btn-back');
-  const logoHome = $('#logo-home');
-  const tooltip = $('#disc-tooltip');
+  const shelfView     = $('#shelf-view');
+  const discView      = $('#disc-view');
+  const btnBack       = $('#btn-back');
+  const logoHome      = $('#logo-home');
+  const tooltip       = $('#disc-tooltip');
+  const loadingOv     = $('#loading-overlay');
 
   let currentDiscId = null;
 
-  // ======================================================
-  //  THREE.JS — SHELF VIEW (Carousel of 3D Discs)
-  // ======================================================
-  let shelfScene, shelfCamera, shelfRenderer, shelfDiscs3D = [], shelfRaycaster, shelfMouse;
+  // ==========================================================
+  //  THREE.JS — SHELF VIEW (3D Carousel)
+  // ==========================================================
+  let shelfScene, shelfCamera, shelfRenderer;
+  let shelfDiscs3D = [];
+  let shelfRaycaster, shelfMouse;
   let shelfAnimId = null;
   let autoRotate = true;
-  let carouselAngle = 0;
-  let targetCarouselAngle = 0;
-  let isDragging = false;
-  let dragStartX = 0;
-  let dragStartAngle = 0;
+  let carouselAngle = 0, targetCarouselAngle = 0;
+  let isDragging = false, dragStartX = 0, dragStartAngle = 0;
   let hoveredDisc = null;
 
   function initShelfScene() {
@@ -113,31 +80,27 @@
     shelfRenderer.toneMappingExposure = 1.2;
 
     // Lights
-    const ambLight = new THREE.AmbientLight(0x333355, 0.6);
-    shelfScene.add(ambLight);
+    shelfScene.add(new THREE.AmbientLight(0x333355, 0.6));
 
-    const spotLight = new THREE.SpotLight(0xffffff, 1.5, 60, Math.PI / 4, 0.5, 1);
-    spotLight.position.set(0, 15, 10);
-    spotLight.castShadow = true;
-    spotLight.shadow.mapSize.set(1024, 1024);
-    shelfScene.add(spotLight);
+    const spot = new THREE.SpotLight(0xffffff, 1.5, 60, Math.PI / 4, 0.5, 1);
+    spot.position.set(0, 15, 10);
+    spot.castShadow = true;
+    spot.shadow.mapSize.set(1024, 1024);
+    shelfScene.add(spot);
 
-    const pointLight1 = new THREE.PointLight(0x6C63FF, 1.2, 30);
-    pointLight1.position.set(-8, 3, 5);
-    shelfScene.add(pointLight1);
+    const pl1 = new THREE.PointLight(0x6C63FF, 1.2, 30);
+    pl1.position.set(-8, 3, 5);
+    shelfScene.add(pl1);
 
-    const pointLight2 = new THREE.PointLight(0xFF6584, 0.8, 30);
-    pointLight2.position.set(8, 3, 5);
-    shelfScene.add(pointLight2);
+    const pl2 = new THREE.PointLight(0xFF6584, 0.8, 30);
+    pl2.position.set(8, 3, 5);
+    shelfScene.add(pl2);
 
-    // Ground reflection plane
+    // Ground
     const groundGeo = new THREE.PlaneGeometry(60, 60);
     const groundMat = new THREE.MeshStandardMaterial({
-      color: 0x08080f,
-      metalness: 0.9,
-      roughness: 0.4,
-      transparent: true,
-      opacity: 0.5,
+      color: 0x08080f, metalness: 0.9, roughness: 0.4,
+      transparent: true, opacity: 0.5,
     });
     const ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
@@ -145,28 +108,25 @@
     ground.receiveShadow = true;
     shelfScene.add(ground);
 
-    // Particle field
+    // Particles
     createParticleField(shelfScene);
 
-    // Raycaster
     shelfRaycaster = new THREE.Raycaster();
     shelfMouse = new THREE.Vector2(-999, -999);
 
-    // Build discs
     buildShelfDiscs();
 
     // Events
-    canvas.addEventListener('mousedown', onShelfMouseDown);
-    canvas.addEventListener('mousemove', onShelfMouseMove);
-    canvas.addEventListener('mouseup', onShelfMouseUp);
-    canvas.addEventListener('mouseleave', onShelfMouseLeave);
-    canvas.addEventListener('click', onShelfClick);
-    canvas.addEventListener('touchstart', onShelfTouchStart, { passive: false });
-    canvas.addEventListener('touchmove', onShelfTouchMove, { passive: false });
-    canvas.addEventListener('touchend', onShelfTouchEnd);
-    canvas.addEventListener('wheel', onShelfWheel, { passive: false });
-
-    window.addEventListener('resize', onShelfResize);
+    canvas.addEventListener('mousedown', onMouseDown);
+    canvas.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('mouseup', onMouseUp);
+    canvas.addEventListener('mouseleave', onMouseLeave);
+    canvas.addEventListener('click', onClick);
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove', onTouchMove, { passive: false });
+    canvas.addEventListener('touchend', onTouchEnd);
+    canvas.addEventListener('wheel', onWheel, { passive: false });
+    window.addEventListener('resize', onResize);
 
     animateShelf();
   }
@@ -174,120 +134,91 @@
   function createParticleField(scene) {
     const count = 300;
     const geo = new THREE.BufferGeometry();
-    const positions = new Float32Array(count * 3);
+    const pos = new Float32Array(count * 3);
     for (let i = 0; i < count; i++) {
-      positions[i * 3]     = (Math.random() - 0.5) * 50;
-      positions[i * 3 + 1] = (Math.random() - 0.5) * 30;
-      positions[i * 3 + 2] = (Math.random() - 0.5) * 50;
+      pos[i * 3]     = (Math.random() - .5) * 50;
+      pos[i * 3 + 1] = (Math.random() - .5) * 30;
+      pos[i * 3 + 2] = (Math.random() - .5) * 50;
     }
-    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     const mat = new THREE.PointsMaterial({
-      color: 0x6C63FF,
-      size: 0.06,
-      transparent: true,
-      opacity: 0.6,
-      sizeAttenuation: true,
+      color: 0x6C63FF, size: 0.06,
+      transparent: true, opacity: 0.6, sizeAttenuation: true,
     });
-    const points = new THREE.Points(geo, mat);
-    points.userData.isParticles = true;
-    scene.add(points);
+    const pts = new THREE.Points(geo, mat);
+    pts.userData.isParticles = true;
+    scene.add(pts);
   }
 
-  /* --- Create a single 3D disc (vinyl record) --- */
+  // --- 3Dディスクを1枚つくる ---
   function createDisc3D(discData, index) {
     const group = new THREE.Group();
     group.userData = { discId: discData.id, index };
-
     const color = new THREE.Color(discData.color);
 
-    // --- Vinyl body (cylinder) ---
-    const vinylGeo = new THREE.CylinderGeometry(2, 2, 0.12, 64, 1);
-    const vinylMat = new THREE.MeshStandardMaterial({
-      color: 0x111111,
-      metalness: 0.85,
-      roughness: 0.2,
+    // Vinyl body
+    const bodyGeo = new THREE.CylinderGeometry(2, 2, 0.12, 64, 1);
+    const bodyMat = new THREE.MeshStandardMaterial({
+      color: 0x111111, metalness: 0.85, roughness: 0.2,
     });
-    const vinyl = new THREE.Mesh(vinylGeo, vinylMat);
-    vinyl.castShadow = true;
-    vinyl.receiveShadow = true;
-    group.add(vinyl);
+    const body = new THREE.Mesh(bodyGeo, bodyMat);
+    body.castShadow = true;
+    body.receiveShadow = true;
+    group.add(body);
 
-    // --- Grooves (multiple thin torus rings) ---
+    // Grooves
     for (let r = 0.5; r < 1.85; r += 0.12) {
-      const grooveGeo = new THREE.TorusGeometry(r, 0.008, 4, 64);
-      const grooveMat = new THREE.MeshStandardMaterial({
-        color: 0x222222,
-        metalness: 0.9,
-        roughness: 0.15,
+      const gGeo = new THREE.TorusGeometry(r, 0.008, 4, 64);
+      const gMat = new THREE.MeshStandardMaterial({
+        color: 0x222222, metalness: 0.9, roughness: 0.15,
       });
-      const groove = new THREE.Mesh(grooveGeo, grooveMat);
-      groove.rotation.x = Math.PI / 2;
-      groove.position.y = 0.065;
-      group.add(groove);
+      const g = new THREE.Mesh(gGeo, gMat);
+      g.rotation.x = Math.PI / 2;
+      g.position.y = 0.065;
+      group.add(g);
     }
 
-    // --- Label (center colored area – top) ---
-    const labelGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.14, 64, 1);
-    const labelMat = new THREE.MeshStandardMaterial({
-      color: color,
-      metalness: 0.3,
-      roughness: 0.5,
-      emissive: color,
-      emissiveIntensity: 0.3,
+    // Label
+    const lblGeo = new THREE.CylinderGeometry(0.55, 0.55, 0.14, 64, 1);
+    const lblMat = new THREE.MeshStandardMaterial({
+      color, metalness: 0.3, roughness: 0.5,
+      emissive: color, emissiveIntensity: 0.3,
     });
-    const label = new THREE.Mesh(labelGeo, labelMat);
-    label.castShadow = true;
-    group.add(label);
+    group.add(new THREE.Mesh(lblGeo, lblMat));
 
-    // --- Center hole ---
-    const holeGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.2, 16);
-    const holeMat = new THREE.MeshStandardMaterial({ color: 0x000000 });
-    const hole = new THREE.Mesh(holeGeo, holeMat);
-    group.add(hole);
+    // Hole
+    const hGeo = new THREE.CylinderGeometry(0.08, 0.08, 0.2, 16);
+    group.add(new THREE.Mesh(hGeo, new THREE.MeshStandardMaterial({ color: 0x000000 })));
 
-    // --- Rim glow ring ---
+    // Rim glow
     const rimGeo = new THREE.TorusGeometry(2.0, 0.025, 8, 64);
     const rimMat = new THREE.MeshStandardMaterial({
-      color: color,
-      emissive: color,
-      emissiveIntensity: 0.6,
-      metalness: 0.9,
-      roughness: 0.1,
-      transparent: true,
-      opacity: 0.7,
+      color, emissive: color, emissiveIntensity: 0.6,
+      metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.7,
     });
     const rim = new THREE.Mesh(rimGeo, rimMat);
     rim.rotation.x = Math.PI / 2;
     group.add(rim);
 
-    // --- Iridescent sheen on top surface ---
+    // Sheen
     const sheenGeo = new THREE.CylinderGeometry(1.95, 1.95, 0.005, 64, 1);
     const sheenMat = new THREE.MeshPhysicalMaterial({
-      color: 0x000000,
-      metalness: 1.0,
-      roughness: 0.05,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.05,
-      transparent: true,
-      opacity: 0.25,
+      color: 0x000000, metalness: 1.0, roughness: 0.05,
+      clearcoat: 1.0, clearcoatRoughness: 0.05,
+      transparent: true, opacity: 0.25,
     });
     const sheen = new THREE.Mesh(sheenGeo, sheenMat);
     sheen.position.y = 0.07;
     group.add(sheen);
 
-    // Tilt the disc so it faces the camera more
     group.rotation.x = Math.PI * 0.08;
-
     return group;
   }
 
   function buildShelfDiscs() {
-    // Remove old
     shelfDiscs3D.forEach(d => shelfScene.remove(d));
     shelfDiscs3D = [];
-
-    const count = discs.length;
-    discs.forEach((disc, i) => {
+    DISCS.forEach((disc, i) => {
       const mesh = createDisc3D(disc, i);
       shelfScene.add(mesh);
       shelfDiscs3D.push(mesh);
@@ -296,112 +227,79 @@
 
   function layoutCarousel(time) {
     const count = shelfDiscs3D.length;
-    if (count === 0) return;
-
+    if (!count) return;
     const radius = Math.max(5, count * 1.3);
 
     shelfDiscs3D.forEach((group, i) => {
       const angle = carouselAngle + (i / count) * Math.PI * 2;
-      const x = Math.sin(angle) * radius;
-      const z = Math.cos(angle) * radius - radius + 3;
-
-      group.position.x = x;
-      group.position.z = z;
+      group.position.x = Math.sin(angle) * radius;
+      group.position.z = Math.cos(angle) * radius - radius + 3;
       group.position.y = Math.sin(time * 0.8 + i * 0.7) * 0.15;
 
-      // Spin each disc slowly
       group.children[0].rotation.y += 0.005;
-      group.children.forEach((child, ci) => {
-        if (ci > 0) child.rotation.y = group.children[0].rotation.y;
-      });
+      group.children.forEach((c, ci) => { if (ci > 0) c.rotation.y = group.children[0].rotation.y; });
 
-      // Face camera slightly
-      const scale = THREE.MathUtils.mapLinear(z, -radius * 2, 5, 0.5, 1.0);
-      const clampedScale = THREE.MathUtils.clamp(scale, 0.45, 1.0);
-      group.scale.setScalar(clampedScale);
-
-      // Highlight hovered
-      if (hoveredDisc === group) {
-        group.scale.setScalar(clampedScale * 1.15);
-      }
+      const z = group.position.z;
+      const scale = THREE.MathUtils.clamp(
+        THREE.MathUtils.mapLinear(z, -radius * 2, 5, 0.5, 1.0), 0.45, 1.0
+      );
+      group.scale.setScalar(hoveredDisc === group ? scale * 1.15 : scale);
     });
   }
 
   function animateShelf() {
     shelfAnimId = requestAnimationFrame(animateShelf);
-
     const time = performance.now() * 0.001;
 
-    // Auto-rotate
-    if (autoRotate && !isDragging) {
-      targetCarouselAngle += 0.0015;
-    }
-
-    // Smooth lerp
+    if (autoRotate && !isDragging) targetCarouselAngle += 0.0015;
     carouselAngle += (targetCarouselAngle - carouselAngle) * 0.06;
-
     layoutCarousel(time);
 
-    // Rotate particles
     shelfScene.children.forEach(c => {
-      if (c.userData && c.userData.isParticles) {
-        c.rotation.y = time * 0.02;
-      }
+      if (c.userData?.isParticles) c.rotation.y = time * 0.02;
     });
 
     shelfRenderer.render(shelfScene, shelfCamera);
   }
 
-  function stopShelfAnim() {
-    if (shelfAnimId) { cancelAnimationFrame(shelfAnimId); shelfAnimId = null; }
+  function stopShelfAnim() { if (shelfAnimId) { cancelAnimationFrame(shelfAnimId); shelfAnimId = null; } }
+
+  // --- Interactions ---
+  function canvasCoords(e) {
+    const r = $('#shelf-canvas').getBoundingClientRect();
+    return { x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 };
   }
 
-  // --- Shelf Interactions ---
-  function getCanvasCoords(e) {
-    const rect = $('#shelf-canvas').getBoundingClientRect();
-    return {
-      x: ((e.clientX - rect.left) / rect.width) * 2 - 1,
-      y: -((e.clientY - rect.top) / rect.height) * 2 + 1,
-    };
-  }
+  function onMouseDown(e) { isDragging = true; autoRotate = false; dragStartX = e.clientX; dragStartAngle = targetCarouselAngle; }
+  function onMouseUp() { isDragging = false; setTimeout(() => { autoRotate = true; }, 3000); }
+  function onMouseLeave() { isDragging = false; hoveredDisc = null; tooltip.classList.add('hidden'); setTimeout(() => { autoRotate = true; }, 1000); }
 
-  function onShelfMouseDown(e) {
-    isDragging = true;
-    autoRotate = false;
-    dragStartX = e.clientX;
-    dragStartAngle = targetCarouselAngle;
-  }
-
-  function onShelfMouseMove(e) {
-    const coords = getCanvasCoords(e);
-    shelfMouse.set(coords.x, coords.y);
+  function onMouseMove(e) {
+    const c = canvasCoords(e);
+    shelfMouse.set(c.x, c.y);
 
     if (isDragging) {
-      const dx = e.clientX - dragStartX;
-      targetCarouselAngle = dragStartAngle + dx * 0.005;
+      targetCarouselAngle = dragStartAngle + (e.clientX - dragStartX) * 0.005;
       tooltip.classList.add('hidden');
       return;
     }
 
-    // Raycast hover
     shelfRaycaster.setFromCamera(shelfMouse, shelfCamera);
     let hit = null;
-    for (const group of shelfDiscs3D) {
-      const intersects = shelfRaycaster.intersectObjects(group.children, true);
-      if (intersects.length > 0) { hit = group; break; }
+    for (const g of shelfDiscs3D) {
+      if (shelfRaycaster.intersectObjects(g.children, true).length) { hit = g; break; }
     }
 
     if (hit !== hoveredDisc) {
       hoveredDisc = hit;
       $('#shelf-canvas').style.cursor = hit ? 'pointer' : 'grab';
-
       if (hit) {
-        const disc = discs.find(d => d.id === hit.userData.discId);
+        const disc = DISCS.find(d => d.id === hit.userData.discId);
         if (disc) {
           tooltip.innerHTML = `
-            <div class="tt-genre" style="color:${disc.color}">${escHtml(disc.genre)}</div>
-            <div class="tt-count">${disc.messages.length} メッセージ</div>
-            <div class="tt-hint">クリックで開く</div>`;
+            <div class="tt-name" style="color:${disc.color}">${esc(disc.name)}</div>
+            <div class="tt-desc">${esc(disc.description.slice(0, 50))}…</div>
+            <div class="tt-hint">クリックで読み込む</div>`;
           tooltip.classList.remove('hidden');
         }
       } else {
@@ -412,109 +310,83 @@
     if (hoveredDisc) {
       const rect = $('#shelf-3d-container').getBoundingClientRect();
       tooltip.style.left = (e.clientX - rect.left + 16) + 'px';
-      tooltip.style.top = (e.clientY - rect.top - 10) + 'px';
+      tooltip.style.top  = (e.clientY - rect.top  - 10) + 'px';
     }
   }
 
-  function onShelfMouseUp(e) {
-    isDragging = false;
-    setTimeout(() => { autoRotate = true; }, 3000);
-  }
-
-  function onShelfMouseLeave() {
-    isDragging = false;
-    hoveredDisc = null;
-    tooltip.classList.add('hidden');
-    setTimeout(() => { autoRotate = true; }, 1000);
-  }
-
-  function onShelfClick(e) {
-    if (Math.abs(e.clientX - dragStartX) > 5) return; // was a drag
-
-    const coords = getCanvasCoords(e);
-    shelfRaycaster.setFromCamera(new THREE.Vector2(coords.x, coords.y), shelfCamera);
-
-    for (const group of shelfDiscs3D) {
-      const intersects = shelfRaycaster.intersectObjects(group.children, true);
-      if (intersects.length > 0) {
-        openDisc(group.userData.discId);
+  function onClick(e) {
+    if (Math.abs(e.clientX - dragStartX) > 5) return;
+    const c = canvasCoords(e);
+    shelfRaycaster.setFromCamera(new THREE.Vector2(c.x, c.y), shelfCamera);
+    for (const g of shelfDiscs3D) {
+      if (shelfRaycaster.intersectObjects(g.children, true).length) {
+        openDisc(g.userData.discId);
         return;
       }
     }
   }
 
-  // Touch support
   let touchStartX = 0;
-  function onShelfTouchStart(e) {
+  function onTouchStart(e) {
     if (e.touches.length === 1) {
-      isDragging = true;
-      autoRotate = false;
+      isDragging = true; autoRotate = false;
       touchStartX = e.touches[0].clientX;
       dragStartX = touchStartX;
       dragStartAngle = targetCarouselAngle;
     }
   }
-  function onShelfTouchMove(e) {
+  function onTouchMove(e) {
     if (isDragging && e.touches.length === 1) {
       e.preventDefault();
-      const dx = e.touches[0].clientX - dragStartX;
-      targetCarouselAngle = dragStartAngle + dx * 0.005;
+      targetCarouselAngle = dragStartAngle + (e.touches[0].clientX - dragStartX) * 0.005;
     }
   }
-  function onShelfTouchEnd(e) {
+  function onTouchEnd(e) {
     if (isDragging && Math.abs((e.changedTouches[0]?.clientX || 0) - touchStartX) < 10) {
-      // Tap → click
-      const touch = e.changedTouches[0];
-      const coords = getCanvasCoords(touch);
-      shelfRaycaster.setFromCamera(new THREE.Vector2(coords.x, coords.y), shelfCamera);
-      for (const group of shelfDiscs3D) {
-        const intersects = shelfRaycaster.intersectObjects(group.children, true);
-        if (intersects.length > 0) { openDisc(group.userData.discId); break; }
+      const t = e.changedTouches[0];
+      const c = canvasCoords(t);
+      shelfRaycaster.setFromCamera(new THREE.Vector2(c.x, c.y), shelfCamera);
+      for (const g of shelfDiscs3D) {
+        if (shelfRaycaster.intersectObjects(g.children, true).length) { openDisc(g.userData.discId); break; }
       }
     }
     isDragging = false;
     setTimeout(() => { autoRotate = true; }, 3000);
   }
 
-  function onShelfWheel(e) {
+  function onWheel(e) {
     e.preventDefault();
     targetCarouselAngle += e.deltaY * 0.002;
     autoRotate = false;
-    clearTimeout(onShelfWheel._timer);
-    onShelfWheel._timer = setTimeout(() => { autoRotate = true; }, 2000);
+    clearTimeout(onWheel._t);
+    onWheel._t = setTimeout(() => { autoRotate = true; }, 2000);
   }
 
-  function onShelfResize() {
-    const container = $('#shelf-3d-container');
-    const w = container.clientWidth;
-    const h = container.clientHeight;
-    shelfCamera.aspect = w / h;
+  function onResize() {
+    const c = $('#shelf-3d-container');
+    shelfCamera.aspect = c.clientWidth / c.clientHeight;
     shelfCamera.updateProjectionMatrix();
-    shelfRenderer.setSize(w, h);
+    shelfRenderer.setSize(c.clientWidth, c.clientHeight);
 
     if (discRenderer) {
       const dc = $('#disc-3d-container');
-      const dw = dc.clientWidth;
-      const dh = dc.clientHeight;
-      discCamera.aspect = dw / dh;
+      discCamera.aspect = dc.clientWidth / dc.clientHeight;
       discCamera.updateProjectionMatrix();
-      discRenderer.setSize(dw, dh);
+      discRenderer.setSize(dc.clientWidth, dc.clientHeight);
     }
   }
 
-  // ======================================================
-  //  THREE.JS — DISC DETAIL VIEW (Single spinning disc)
-  // ======================================================
+  // ==========================================================
+  //  THREE.JS — DISC DETAIL VIEW
+  // ==========================================================
   let discScene, discCamera, discRenderer, discMesh, discAnimId;
 
   function initDiscScene() {
     const container = $('#disc-3d-container');
     const canvas = $('#disc-canvas');
-    const w = container.clientWidth;
-    const h = container.clientHeight;
+    const w = container.clientWidth, h = container.clientHeight;
 
     discScene = new THREE.Scene();
-
     discCamera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
     discCamera.position.set(0, 3.5, 5);
     discCamera.lookAt(0, 0, 0);
@@ -526,173 +398,120 @@
     discRenderer.toneMapping = THREE.ACESFilmicToneMapping;
     discRenderer.toneMappingExposure = 1.4;
 
-    // Lights
     discScene.add(new THREE.AmbientLight(0x333355, 0.5));
-
     const spot = new THREE.SpotLight(0xffffff, 2.0, 40, Math.PI / 5, 0.4, 1);
-    spot.position.set(0, 10, 5);
-    spot.castShadow = true;
+    spot.position.set(0, 10, 5); spot.castShadow = true;
     discScene.add(spot);
-
-    const pl1 = new THREE.PointLight(0x6C63FF, 1.5, 20);
-    pl1.position.set(-4, 2, 3);
-    discScene.add(pl1);
-
-    const pl2 = new THREE.PointLight(0xFF6584, 1.0, 20);
-    pl2.position.set(4, 2, 3);
-    discScene.add(pl2);
-
-    // We'll add the disc mesh per-disc open
+    discScene.add(Object.assign(new THREE.PointLight(0x6C63FF, 1.5, 20), { position: new THREE.Vector3(-4, 2, 3) }));
+    discScene.add(Object.assign(new THREE.PointLight(0xFF6584, 1.0, 20), { position: new THREE.Vector3(4, 2, 3) }));
   }
 
   function buildDetailDisc(discData) {
-    // Remove previous
-    if (discMesh) { discScene.remove(discMesh); }
+    if (discMesh) discScene.remove(discMesh);
 
     const color = new THREE.Color(discData.color);
-    const group = new THREE.Group();
+    const g = new THREE.Group();
 
-    // --- Main vinyl body ---
-    const bodyGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.15, 128, 1);
-    const bodyMat = new THREE.MeshPhysicalMaterial({
-      color: 0x0a0a0a,
-      metalness: 0.95,
-      roughness: 0.12,
-      clearcoat: 0.8,
-      clearcoatRoughness: 0.1,
-      reflectivity: 1.0,
+    // Body
+    const bGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.15, 128, 1);
+    const bMat = new THREE.MeshPhysicalMaterial({
+      color: 0x0a0a0a, metalness: 0.95, roughness: 0.12,
+      clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 1.0,
     });
-    const body = new THREE.Mesh(bodyGeo, bodyMat);
-    body.castShadow = true;
-    body.receiveShadow = true;
-    group.add(body);
+    const body = new THREE.Mesh(bGeo, bMat);
+    body.castShadow = true; body.receiveShadow = true;
+    g.add(body);
 
-    // --- Grooves (more detailed) ---
+    // Grooves
     for (let r = 0.7; r < 2.4; r += 0.08) {
-      const gGeo = new THREE.TorusGeometry(r, 0.006, 4, 128);
-      const gMat = new THREE.MeshStandardMaterial({
-        color: 0x181818,
-        metalness: 0.95,
-        roughness: 0.1,
-      });
-      const g = new THREE.Mesh(gGeo, gMat);
-      g.rotation.x = Math.PI / 2;
-      g.position.y = 0.08;
-      group.add(g);
+      const gg = new THREE.Mesh(
+        new THREE.TorusGeometry(r, 0.006, 4, 128),
+        new THREE.MeshStandardMaterial({ color: 0x181818, metalness: 0.95, roughness: 0.1 })
+      );
+      gg.rotation.x = Math.PI / 2; gg.position.y = 0.08;
+      g.add(gg);
     }
 
-    // --- Iridescent rainbow reflection ---
-    const iriGeo = new THREE.CylinderGeometry(2.45, 2.45, 0.005, 128, 1);
-    const iriMat = new THREE.MeshPhysicalMaterial({
-      color: 0x000000,
-      metalness: 1.0,
-      roughness: 0.0,
-      clearcoat: 1.0,
-      clearcoatRoughness: 0.0,
-      transparent: true,
-      opacity: 0.15,
-      envMapIntensity: 2.0,
+    // Iridescent sheen
+    const iGeo = new THREE.CylinderGeometry(2.45, 2.45, 0.005, 128, 1);
+    const iMat = new THREE.MeshPhysicalMaterial({
+      color: 0x000000, metalness: 1.0, roughness: 0.0,
+      clearcoat: 1.0, clearcoatRoughness: 0.0,
+      transparent: true, opacity: 0.15, envMapIntensity: 2.0,
     });
-    const iri = new THREE.Mesh(iriGeo, iriMat);
+    const iri = new THREE.Mesh(iGeo, iMat);
     iri.position.y = 0.085;
-    group.add(iri);
+    g.add(iri);
 
-    // --- Label ---
-    const lblGeo = new THREE.CylinderGeometry(0.7, 0.7, 0.17, 64, 1);
-    const lblMat = new THREE.MeshStandardMaterial({
-      color: color,
-      metalness: 0.2,
-      roughness: 0.6,
-      emissive: color,
-      emissiveIntensity: 0.4,
-    });
-    const lbl = new THREE.Mesh(lblGeo, lblMat);
+    // Label
+    const lbl = new THREE.Mesh(
+      new THREE.CylinderGeometry(0.7, 0.7, 0.17, 64, 1),
+      new THREE.MeshStandardMaterial({
+        color, metalness: 0.2, roughness: 0.6,
+        emissive: color, emissiveIntensity: 0.4,
+      })
+    );
     lbl.castShadow = true;
-    group.add(lbl);
+    g.add(lbl);
 
-    // --- Label ring decoration ---
-    const lrGeo = new THREE.TorusGeometry(0.7, 0.02, 8, 64);
-    const lrMat = new THREE.MeshStandardMaterial({
-      color: 0xffffff,
-      metalness: 0.9,
-      roughness: 0.1,
-      transparent: true,
-      opacity: 0.3,
-    });
-    const lr = new THREE.Mesh(lrGeo, lrMat);
-    lr.rotation.x = Math.PI / 2;
-    lr.position.y = 0.09;
-    group.add(lr);
+    // Label ring
+    const lr = new THREE.Mesh(
+      new THREE.TorusGeometry(0.7, 0.02, 8, 64),
+      new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.3 })
+    );
+    lr.rotation.x = Math.PI / 2; lr.position.y = 0.09;
+    g.add(lr);
 
-    // --- Center hole ---
-    const hGeo = new THREE.CylinderGeometry(0.1, 0.1, 0.25, 32);
-    const hMat = new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1, roughness: 0 });
-    const h = new THREE.Mesh(hGeo, hMat);
-    group.add(h);
+    // Hole + ring
+    g.add(new THREE.Mesh(
+      new THREE.CylinderGeometry(0.1, 0.1, 0.25, 32),
+      new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1, roughness: 0 })
+    ));
+    const ch = new THREE.Mesh(
+      new THREE.TorusGeometry(0.1, 0.015, 8, 32),
+      new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.95, roughness: 0.05 })
+    );
+    ch.rotation.x = Math.PI / 2; ch.position.y = 0.09;
+    g.add(ch);
 
-    // --- Center hole ring ---
-    const chGeo = new THREE.TorusGeometry(0.1, 0.015, 8, 32);
-    const chMat = new THREE.MeshStandardMaterial({
-      color: 0xcccccc,
-      metalness: 0.95,
-      roughness: 0.05,
-    });
-    const ch = new THREE.Mesh(chGeo, chMat);
-    ch.rotation.x = Math.PI / 2;
-    ch.position.y = 0.09;
-    group.add(ch);
-
-    // --- Outer rim ---
-    const rimGeo = new THREE.TorusGeometry(2.5, 0.04, 12, 128);
-    const rimMat = new THREE.MeshStandardMaterial({
-      color: color,
-      emissive: color,
-      emissiveIntensity: 0.8,
-      metalness: 0.95,
-      roughness: 0.05,
-      transparent: true,
-      opacity: 0.8,
-    });
-    const rim = new THREE.Mesh(rimGeo, rimMat);
+    // Outer rim glow
+    const rim = new THREE.Mesh(
+      new THREE.TorusGeometry(2.5, 0.04, 12, 128),
+      new THREE.MeshStandardMaterial({
+        color, emissive: color, emissiveIntensity: 0.8,
+        metalness: 0.95, roughness: 0.05, transparent: true, opacity: 0.8,
+      })
+    );
     rim.rotation.x = Math.PI / 2;
-    group.add(rim);
+    g.add(rim);
 
-    // --- Glow ring ---
-    const glowGeo = new THREE.TorusGeometry(2.6, 0.15, 8, 128);
-    const glowMat = new THREE.MeshBasicMaterial({
-      color: color,
-      transparent: true,
-      opacity: 0.08,
-    });
-    const glow = new THREE.Mesh(glowGeo, glowMat);
+    const glow = new THREE.Mesh(
+      new THREE.TorusGeometry(2.6, 0.15, 8, 128),
+      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.08 })
+    );
     glow.rotation.x = Math.PI / 2;
-    group.add(glow);
+    g.add(glow);
 
-    // Tilt slightly
-    group.rotation.x = Math.PI * 0.1;
-
-    discMesh = group;
+    g.rotation.x = Math.PI * 0.1;
+    discMesh = g;
     discScene.add(discMesh);
   }
 
   function animateDisc() {
     discAnimId = requestAnimationFrame(animateDisc);
-    const time = performance.now() * 0.001;
-
+    const t = performance.now() * 0.001;
     if (discMesh) {
       discMesh.rotation.y += 0.008;
-      // Gentle float
-      discMesh.position.y = Math.sin(time * 0.6) * 0.1;
+      discMesh.position.y = Math.sin(t * 0.6) * 0.1;
     }
-
     discRenderer.render(discScene, discCamera);
   }
 
-  function stopDiscAnim() {
-    if (discAnimId) { cancelAnimationFrame(discAnimId); discAnimId = null; }
-  }
+  function stopDiscAnim() { if (discAnimId) { cancelAnimationFrame(discAnimId); discAnimId = null; } }
 
-  // ========== View Navigation ==========
+  // ==========================================================
+  //  NAVIGATION
+  // ==========================================================
   function showView(view) {
     $$('.view').forEach(v => v.classList.remove('active'));
     view.classList.add('active');
@@ -704,168 +523,113 @@
 
   function openDisc(discId) {
     currentDiscId = discId;
-    const disc = discs.find(d => d.id === discId);
+    const disc = DISCS.find(d => d.id === discId);
     if (!disc) return;
 
-    // Stop shelf anim, start disc anim
-    stopShelfAnim();
+    // ローディング演出
+    loadingOv.classList.add('active');
 
-    if (!discRenderer) initDiscScene();
-    buildDetailDisc(disc);
-    stopDiscAnim();
-    animateDisc();
+    setTimeout(() => {
+      stopShelfAnim();
 
-    renderDiscInfo(disc);
-    showView(discView);
+      if (!discRenderer) initDiscScene();
+      buildDetailDisc(disc);
+      stopDiscAnim();
+      animateDisc();
+
+      // 情報表示
+      const nameEl = $('#disc-app-name');
+      nameEl.textContent = disc.name;
+      nameEl.style.background = `linear-gradient(135deg, #fff, ${disc.color})`;
+      nameEl.style.webkitBackgroundClip = 'text';
+      nameEl.style.webkitTextFillColor = 'transparent';
+      nameEl.style.backgroundClip = 'text';
+
+      $('#disc-description').textContent = disc.description;
+
+      // Tags
+      const metaEl = $('#disc-meta');
+      metaEl.innerHTML = disc.tags.map(t =>
+        `<span class="meta-tag"><span class="meta-icon">#</span>${esc(t)}</span>`
+      ).join('');
+
+      // Buttons
+      const btnLaunch = $('#btn-launch');
+      btnLaunch.href = disc.url;
+      btnLaunch.style.background = `linear-gradient(135deg, ${disc.color}, ${shiftHue(disc.color, 30)})`;
+      btnLaunch.style.boxShadow = `0 4px 24px ${disc.color}66`;
+
+      const btnRepo = $('#btn-repo');
+      btnRepo.href = disc.repo;
+
+      loadingOv.classList.remove('active');
+      showView(discView);
+    }, 800); // Loading delay for effect
   }
 
   function goHome() {
     currentDiscId = null;
     stopDiscAnim();
-
-    // Rebuild shelf if data changed
     buildShelfDiscs();
     if (!shelfAnimId) animateShelf();
-
     showView(shelfView);
   }
 
-  function renderDiscInfo(disc) {
-    $('#disc-genre').textContent = disc.genre;
-    $('#disc-genre').style.background = `linear-gradient(135deg, #fff, ${disc.color})`;
-    $('#disc-genre').style.webkitBackgroundClip = 'text';
-    $('#disc-genre').style.webkitTextFillColor = 'transparent';
-    $('#disc-description').textContent = disc.description;
-    $('#disc-msg-count').textContent = `${disc.messages.length} メッセージ`;
-    $('#disc-msg-count').style.color = disc.color;
-    $('#disc-msg-count').style.borderColor = disc.color + '44';
-    $('#disc-msg-count').style.background = disc.color + '1a';
-
-    renderMessages(disc);
-  }
-
-  function renderMessages(disc) {
-    messagesList.innerHTML = '';
-    if (disc.messages.length === 0) {
-      messagesList.innerHTML = `
-        <div class="empty-state" style="grid-column:1/-1">
-          <div class="empty-state-icon">✎</div>
-          <p class="empty-state-text">まだメッセージがありません。<br/>最初の声を書き込んでみませんか？</p>
-        </div>`;
-      return;
-    }
-
-    const sorted = [...disc.messages].sort((a, b) => new Date(b.time) - new Date(a.time));
-    sorted.forEach((msg, idx) => {
-      const card = document.createElement('div');
-      card.className = 'msg-card';
-      card.style.animationDelay = `${idx * .06}s`;
-
-      const d = new Date(msg.time);
-      const dateStr = `${d.getFullYear()}/${String(d.getMonth() + 1).padStart(2, '0')}/${String(d.getDate()).padStart(2, '0')} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
-
-      card.innerHTML = `
-        <div class="msg-nick" style="color:${disc.color}">${escHtml(msg.nick || '匿名')}</div>
-        <div class="msg-body">${escHtml(msg.body)}</div>
-        <div class="msg-time">${dateStr}</div>`;
-
-      messagesList.appendChild(card);
-    });
-
-    // Dynamic accent color for ::before
-    let styleEl = $('#dynamic-msg-style');
-    if (!styleEl) {
-      styleEl = document.createElement('style');
-      styleEl.id = 'dynamic-msg-style';
-      document.head.appendChild(styleEl);
-    }
-    styleEl.textContent = `
-      .msg-card::before { background: ${disc.color} !important; }
-      .msg-nick::before { color: ${disc.color} !important; }
-    `;
-  }
-
-  // ========== Modals ==========
-  function openModal(el) { el.classList.add('open'); document.body.style.overflow = 'hidden'; }
-  function closeModal(el) { el.classList.remove('open'); document.body.style.overflow = ''; }
-
-  $$('.modal-close').forEach(btn => {
-    btn.addEventListener('click', () => closeModal($('#' + btn.dataset.close)));
-  });
-  $$('.modal-overlay').forEach(ov => {
-    ov.addEventListener('click', e => { if (e.target === ov) closeModal(ov); });
-  });
-
-  // Color picker
-  let selectedColor = '#6C63FF';
-  $$('.color-swatch').forEach(sw => {
-    sw.addEventListener('click', () => {
-      $$('.color-swatch').forEach(s => s.classList.remove('active'));
-      sw.classList.add('active');
-      selectedColor = sw.dataset.color;
-    });
-  });
-
-  // Form: Add Disc
-  btnAddDisc.addEventListener('click', () => {
-    formDisc.reset();
-    $$('.color-swatch').forEach(s => s.classList.remove('active'));
-    $('.color-swatch').classList.add('active');
-    selectedColor = '#6C63FF';
-    openModal(modalDisc);
-  });
-
-  formDisc.addEventListener('submit', e => {
-    e.preventDefault();
-    const genre = $('#input-genre').value.trim();
-    const desc = $('#input-desc').value.trim();
-    if (!genre || !desc) return;
-
-    discs.unshift({
-      id: _uid(), genre, description: desc, color: selectedColor, messages: [],
-    });
-    saveData(discs);
-    buildShelfDiscs();
-    closeModal(modalDisc);
-    formDisc.reset();
-  });
-
-  // Form: Add Message
-  btnAddMsg.addEventListener('click', () => { formMsg.reset(); openModal(modalMsg); });
-
-  formMsg.addEventListener('submit', e => {
-    e.preventDefault();
-    const nick = $('#input-nick').value.trim() || '匿名';
-    const body = $('#input-msg').value.trim();
-    if (!body || !currentDiscId) return;
-
-    const disc = discs.find(d => d.id === currentDiscId);
-    if (!disc) return;
-
-    disc.messages.push({
-      id: _uid(), nick, body, time: new Date().toISOString(),
-    });
-    saveData(discs);
-    renderDiscInfo(disc);
-
-    // Update detail disc to show new count
-    if (discMesh) buildDetailDisc(disc);
-
-    closeModal(modalMsg);
-    formMsg.reset();
-  });
-
-  // Nav
+  // ==========================================================
+  //  EVENTS
+  // ==========================================================
   btnBack.addEventListener('click', goHome);
   logoHome.addEventListener('click', goHome);
 
-  // ========== Utility ==========
-  function escHtml(str) {
+  // ==========================================================
+  //  UTILITIES
+  // ==========================================================
+  function esc(str) {
     const d = document.createElement('div');
     d.textContent = str;
     return d.innerHTML;
   }
 
-  // ========== Init ==========
+  function shiftHue(hex, deg) {
+    let r = parseInt(hex.slice(1, 3), 16) / 255;
+    let g = parseInt(hex.slice(3, 5), 16) / 255;
+    let b = parseInt(hex.slice(5, 7), 16) / 255;
+
+    const max = Math.max(r, g, b), min = Math.min(r, g, b);
+    let h, s, l = (max + min) / 2;
+
+    if (max === min) { h = s = 0; }
+    else {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      if (max === r) h = ((g - b) / d + (g < b ? 6 : 0)) / 6;
+      else if (max === g) h = ((b - r) / d + 2) / 6;
+      else h = ((r - g) / d + 4) / 6;
+    }
+
+    h = (h + deg / 360) % 1;
+    if (h < 0) h += 1;
+
+    function hue2rgb(p, q, t) {
+      if (t < 0) t += 1;
+      if (t > 1) t -= 1;
+      if (t < 1 / 6) return p + (q - p) * 6 * t;
+      if (t < 1 / 2) return q;
+      if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+      return p;
+    }
+
+    const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+    const p = 2 * l - q;
+    r = Math.round(hue2rgb(p, q, h + 1 / 3) * 255);
+    g = Math.round(hue2rgb(p, q, h) * 255);
+    b = Math.round(hue2rgb(p, q, h - 1 / 3) * 255);
+
+    return `#${[r, g, b].map(v => v.toString(16).padStart(2, '0')).join('')}`;
+  }
+
+  // ==========================================================
+  //  INIT
+  // ==========================================================
   initShelfScene();
 })();

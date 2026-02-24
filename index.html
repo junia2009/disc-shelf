@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>DISC SHELF — ひとりでも、つながれる場所</title>
+  <title>DISC SHELF — My App Portal</title>
 
   <!-- PWA / iPhone ホーム画面アイコン -->
   <link rel="apple-touch-icon" href="icon.png" />
@@ -28,7 +28,7 @@
         <span class="logo-icon">◉</span>
         <span class="logo-text">DISC SHELF</span>
       </div>
-      <p class="tagline">ひとりでも、つながれる場所。</p>
+      <p class="tagline">アプリを、ディスクで選ぶ。</p>
     </div>
   </header>
 
@@ -38,20 +38,16 @@
     <!-- ===== 棚ビュー (Shelf View) ===== -->
     <section id="shelf-view" class="view active">
       <div class="shelf-header">
-        <h2 class="section-title">棚からディスクを選ぼう</h2>
-        <p class="section-sub">ディスクをクリックして、みんなの声をのぞいてみよう。ドラッグで棚を回せるよ。</p>
-        <button class="btn-glow" id="btn-add-disc">
-          <span class="btn-icon">＋</span>新しいディスクを追加
-        </button>
+        <h2 class="section-title">MY DISC SHELF</h2>
+        <p class="section-sub">ディスクをクリックしてアプリを読み込もう。ドラッグで棚を回せるよ。</p>
       </div>
-      <!-- 3D 棚キャンバス -->
       <div id="shelf-3d-container">
         <canvas id="shelf-canvas"></canvas>
         <div id="disc-tooltip" class="disc-tooltip hidden"></div>
       </div>
     </section>
 
-    <!-- ===== ディスクビュー (Disc View) ===== -->
+    <!-- ===== ディスクビュー (Disc Detail / Launch View) ===== -->
     <section id="disc-view" class="view">
       <button class="btn-back" id="btn-back">
         <span class="arrow">←</span> 棚に戻る
@@ -62,79 +58,34 @@
           <canvas id="disc-canvas"></canvas>
         </div>
         <div class="disc-info">
-          <h2 class="disc-genre" id="disc-genre"></h2>
+          <h2 class="disc-app-name" id="disc-app-name"></h2>
           <p class="disc-description" id="disc-description"></p>
-          <div class="disc-stats">
-            <span class="stat-badge" id="disc-msg-count">0 メッセージ</span>
+          <div class="disc-meta" id="disc-meta"></div>
+          <div class="disc-actions">
+            <a class="btn-launch" id="btn-launch" href="#" target="_blank" rel="noopener">
+              <span class="launch-icon">▶</span> アプリを起動
+            </a>
+            <a class="btn-repo" id="btn-repo" href="#" target="_blank" rel="noopener">
+              <span class="repo-icon">⟨/⟩</span> リポジトリ
+            </a>
           </div>
         </div>
       </div>
 
-      <div class="messages-area">
-        <div class="messages-header">
-          <h3 class="messages-title">みんなの声</h3>
-          <button class="btn-glow small" id="btn-add-msg">
-            <span class="btn-icon">✎</span> 書き込む
-          </button>
+      <!-- ディスク読み込み演出 -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="loading-disc-wrapper">
+          <div class="loading-spinner"></div>
+          <p class="loading-text">ディスクを読み込み中…</p>
         </div>
-        <div class="messages-list" id="messages-list"></div>
       </div>
     </section>
 
   </main>
 
-  <!-- ===== モーダル: ディスク追加 ===== -->
-  <div class="modal-overlay" id="modal-disc">
-    <div class="modal-card">
-      <button class="modal-close" data-close="modal-disc">✕</button>
-      <h3 class="modal-title">新しいディスクを作る</h3>
-      <form id="form-disc">
-        <label class="form-label">
-          ジャンル名
-          <input type="text" id="input-genre" placeholder="例: おいしいごはん屋さん" required maxlength="30" />
-        </label>
-        <label class="form-label">
-          説明
-          <textarea id="input-desc" placeholder="どんなメッセージを集めたい？" required maxlength="120"></textarea>
-        </label>
-        <label class="form-label">
-          ディスクカラー
-          <div class="color-picker" id="color-picker">
-            <span class="color-swatch active" data-color="#6C63FF" style="background:#6C63FF"></span>
-            <span class="color-swatch" data-color="#FF6584" style="background:#FF6584"></span>
-            <span class="color-swatch" data-color="#43E97B" style="background:#43E97B"></span>
-            <span class="color-swatch" data-color="#F7971E" style="background:#F7971E"></span>
-            <span class="color-swatch" data-color="#00C9FF" style="background:#00C9FF"></span>
-            <span class="color-swatch" data-color="#F953C6" style="background:#F953C6"></span>
-          </div>
-        </label>
-        <button type="submit" class="btn-glow full">ディスクを棚に置く</button>
-      </form>
-    </div>
-  </div>
-
-  <!-- ===== モーダル: メッセージ追加 ===== -->
-  <div class="modal-overlay" id="modal-msg">
-    <div class="modal-card">
-      <button class="modal-close" data-close="modal-msg">✕</button>
-      <h3 class="modal-title">ディスクに書き込む</h3>
-      <form id="form-msg">
-        <label class="form-label">
-          ニックネーム
-          <input type="text" id="input-nick" placeholder="匿名でもOK" maxlength="20" />
-        </label>
-        <label class="form-label">
-          メッセージ
-          <textarea id="input-msg" placeholder="あなたの声を聞かせて。" required maxlength="300"></textarea>
-        </label>
-        <button type="submit" class="btn-glow full">書き込む</button>
-      </form>
-    </div>
-  </div>
-
   <!-- ===== フッター ===== -->
   <footer id="site-footer">
-    <p>DISC SHELF © 2026 — Everyone's voice, one shelf at a time.</p>
+    <p>DISC SHELF © 2026 — One disc, one app.</p>
   </footer>
 
   <!-- Three.js -->
