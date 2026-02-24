@@ -28,6 +28,15 @@
       repo: 'https://github.com/junia2009/app_timer',
       tags: ['JS', 'tool'],
     },
+    {
+      id: 'grow_model',
+      name: 'GROWモデルシート',
+      description: 'GROWモデルの実戦用アプリ',
+      color: '#00C9A7',
+      url: 'https://junia2009.github.io/grow-recruiter-app/',
+      repo: 'https://github.com/junia2009/grow-recruiter-app',
+      tags: ['HTML', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
