@@ -1,0 +1,21 @@
+{
+  "name": "DISC SHELF",
+  "short_name": "DISC SHELF",
+  "description": "ひとりでも、つながれる場所。",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#08080f",
+  "theme_color": "#6C63FF",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
