@@ -135,60 +135,113 @@ body {
   font-size: .65rem; color: var(--text-muted);
 }
 
-/* ---------- Back Button ---------- */
-.btn-back {
-  display: inline-flex; align-items: center; gap: .4rem;
-  background: none; border: 1px solid var(--border);
-  color: var(--text-secondary);
-  padding: .5rem 1.2rem; border-radius: 50px;
-  cursor: pointer; font-family: 'Noto Sans JP', sans-serif;
-  font-size: .85rem; transition: var(--transition);
-  margin-bottom: 2rem;
+/* ---------- Launch Modal ---------- */
+.modal-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(0,0,0,.65);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  opacity: 0; visibility: hidden;
+  transition: opacity .35s ease, visibility .35s ease;
 }
-.btn-back:hover { color: var(--text-primary); border-color: var(--accent); background: rgba(108,99,255,.08); }
-.btn-back .arrow { font-size: 1.1rem; transition: transform var(--transition); }
-.btn-back:hover .arrow { transform: translateX(-4px); }
-
-/* ---------- Disc Stage ---------- */
-.disc-stage {
-  display: flex; align-items: center; gap: 3rem;
-  margin-bottom: 3rem; flex-wrap: wrap;
+.modal-overlay.open {
+  opacity: 1; visibility: visible;
 }
 
-#disc-3d-container {
-  flex-shrink: 0; width: 320px; height: 320px;
-  border-radius: 50%; overflow: hidden; position: relative;
+.modal-launch-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 2.5rem 2rem 2rem;
+  width: 90%; max-width: 420px;
+  text-align: center;
+  position: relative;
+  transform: translateY(24px) scale(.94);
+  transition: transform .4s cubic-bezier(.4,0,.2,1);
+  box-shadow: 0 16px 64px rgba(0,0,0,.6);
 }
-#disc-canvas { display: block; width: 100%; height: 100%; }
+.modal-overlay.open .modal-launch-card {
+  transform: translateY(0) scale(1);
+}
 
-.disc-info { flex: 1; min-width: 240px; }
+.modal-close {
+  position: absolute; top: 1rem; right: 1rem;
+  background: none; border: none;
+  color: var(--text-muted); font-size: 1.2rem;
+  cursor: pointer; transition: var(--transition);
+  width: 32px; height: 32px;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+}
+.modal-close:hover { background: rgba(255,255,255,.06); color: var(--text-primary); }
 
-.disc-app-name {
+/* Disc visual in modal */
+.modal-launch-disc {
+  margin: 0 auto 1.5rem;
+  width: 100px; height: 100px;
+}
+
+.modal-disc-ring {
+  width: 100%; height: 100%;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, #111, #222, #111, #222, #111, #222, #111);
+  display: flex; align-items: center; justify-content: center;
+  animation: modalDiscSpin 4s linear infinite;
+  box-shadow: 0 0 0 3px rgba(255,255,255,.06), 0 0 30px rgba(0,0,0,.5);
+  position: relative;
+}
+
+@keyframes modalDiscSpin {
+  to { transform: rotate(360deg); }
+}
+
+.modal-disc-inner {
+  width: 38%; height: 38%;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  animation: modalDiscSpinReverse 4s linear infinite;
+}
+
+@keyframes modalDiscSpinReverse {
+  to { transform: rotate(-360deg); }
+}
+
+.modal-disc-icon {
+  font-size: 1.2rem; color: #fff;
+  filter: drop-shadow(0 0 6px rgba(255,255,255,.4));
+}
+
+.modal-launch-name {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(1.4rem, 3vw, 2.2rem);
-  font-weight: 900; letter-spacing: 2px; margin-bottom: .6rem;
+  font-size: 1.3rem; font-weight: 900;
+  letter-spacing: 2px; margin-bottom: .6rem;
 }
 
-.disc-description {
+.modal-launch-desc {
   color: var(--text-secondary);
-  font-size: .95rem; line-height: 1.7; margin-bottom: 1.2rem;
+  font-size: .88rem; line-height: 1.6;
+  margin-bottom: 1rem;
 }
 
-.disc-meta {
-  display: flex; flex-wrap: wrap; gap: .5rem;
-  margin-bottom: 1.5rem;
+.modal-launch-tags {
+  display: flex; flex-wrap: wrap; gap: .4rem;
+  justify-content: center; margin-bottom: 1.5rem;
 }
 
 .meta-tag {
   display: inline-flex; align-items: center; gap: .3rem;
-  padding: .25rem .8rem; border-radius: 50px;
-  font-size: .72rem; font-weight: 600;
+  padding: .2rem .7rem; border-radius: 50px;
+  font-size: .7rem; font-weight: 600;
   background: rgba(255,255,255,.05);
   border: 1px solid var(--border);
   color: var(--text-secondary);
 }
+.meta-tag .meta-icon { font-size: .75rem; }
 
-.meta-tag .meta-icon { font-size: .8rem; }
+.modal-launch-actions {
+  display: flex; flex-direction: column; gap: .8rem;
+}
 
 /* ---------- Action Buttons ---------- */
 .disc-actions {
@@ -241,41 +294,7 @@ body {
 
 .repo-icon { font-family: monospace; font-size: 1rem; }
 
-/* ---------- Loading Overlay ---------- */
-.loading-overlay {
-  position: fixed; inset: 0; z-index: 2000;
-  background: rgba(8,8,15,.95);
-  display: flex; align-items: center; justify-content: center;
-  flex-direction: column;
-  opacity: 0; pointer-events: none;
-  transition: opacity .4s ease;
-}
-.loading-overlay.active {
-  opacity: 1; pointer-events: all;
-}
 
-.loading-disc-wrapper { text-align: center; }
-
-.loading-spinner {
-  width: 80px; height: 80px; margin: 0 auto 1.5rem;
-  border-radius: 50%;
-  border: 3px solid rgba(108,99,255,.2);
-  border-top-color: var(--accent);
-  animation: loadSpin .8s linear infinite;
-  box-shadow: 0 0 24px var(--accent-glow);
-}
-@keyframes loadSpin { to { transform: rotate(360deg); } }
-
-.loading-text {
-  font-family: 'Orbitron', sans-serif;
-  font-size: .9rem; letter-spacing: 2px;
-  color: var(--text-secondary);
-  animation: pulse 1.5s ease infinite;
-}
-@keyframes pulse {
-  0%, 100% { opacity: .5; }
-  50% { opacity: 1; }
-}
 
 /* ---------- Footer ---------- */
 #site-footer {
@@ -296,9 +315,5 @@ body {
 @media (max-width: 640px) {
   #app { padding: 1rem; }
   #shelf-3d-container { height: 400px; }
-  .disc-stage { flex-direction: column; align-items: center; gap: 1.5rem; }
-  #disc-3d-container { width: 240px; height: 240px; }
-  .disc-actions { flex-direction: column; }
-  .btn-launch, .btn-repo { width: 100%; justify-content: center; }
   .tagline { display: none; }
 }

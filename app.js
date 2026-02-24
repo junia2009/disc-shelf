@@ -19,16 +19,16 @@
       repo: 'https://github.com/junia2009/disc-shelf',
       tags: ['Three.js', 'Portal', 'PWA'],
     },
+    {
+      id: 'my-timer',
+      name: 'My タイマー',
+      description: '自分用に作成したタイマーアプリ',
+      color: '#FF6584',
+      url: 'https://junia2009.github.io/app_timer/',
+      repo: 'https://github.com/junia2009/app_timer',
+      tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
-    // {
-    //   id: 'my-next-app',
-    //   name: 'My Next App',
-    //   description: 'ここにアプリの説明を書く',
-    //   color: '#FF6584',
-    //   url: 'https://junia2009.github.io/my-next-app/',
-    //   repo: 'https://github.com/junia2009/my-next-app',
-    //   tags: ['React', 'Game'],
-    // },
   ];
 
   // ==========================================================
@@ -38,11 +38,10 @@
   const $$ = (s, p = document) => [...p.querySelectorAll(s)];
 
   const shelfView     = $('#shelf-view');
-  const discView      = $('#disc-view');
-  const btnBack       = $('#btn-back');
   const logoHome      = $('#logo-home');
   const tooltip       = $('#disc-tooltip');
-  const loadingOv     = $('#loading-overlay');
+  const modalLaunch   = $('#modal-launch');
+  const modalClose    = $('#modal-launch-close');
 
   let currentDiscId = null;
 
@@ -367,219 +366,55 @@
     shelfCamera.aspect = c.clientWidth / c.clientHeight;
     shelfCamera.updateProjectionMatrix();
     shelfRenderer.setSize(c.clientWidth, c.clientHeight);
-
-    if (discRenderer) {
-      const dc = $('#disc-3d-container');
-      discCamera.aspect = dc.clientWidth / dc.clientHeight;
-      discCamera.updateProjectionMatrix();
-      discRenderer.setSize(dc.clientWidth, dc.clientHeight);
-    }
   }
 
   // ==========================================================
-  //  THREE.JS — DISC DETAIL VIEW
+  //  MODAL — ディスク確認モーダル
   // ==========================================================
-  let discScene, discCamera, discRenderer, discMesh, discAnimId;
+  function openModal() { modalLaunch.classList.add('open'); document.body.style.overflow = 'hidden'; }
+  function closeModal() { modalLaunch.classList.remove('open'); document.body.style.overflow = ''; currentDiscId = null; }
 
-  function initDiscScene() {
-    const container = $('#disc-3d-container');
-    const canvas = $('#disc-canvas');
-    const w = container.clientWidth, h = container.clientHeight;
-
-    discScene = new THREE.Scene();
-    discCamera = new THREE.PerspectiveCamera(40, w / h, 0.1, 100);
-    discCamera.position.set(0, 3.5, 5);
-    discCamera.lookAt(0, 0, 0);
-
-    discRenderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
-    discRenderer.setSize(w, h);
-    discRenderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    discRenderer.shadowMap.enabled = true;
-    discRenderer.toneMapping = THREE.ACESFilmicToneMapping;
-    discRenderer.toneMappingExposure = 1.4;
-
-    discScene.add(new THREE.AmbientLight(0x333355, 0.5));
-    const spot = new THREE.SpotLight(0xffffff, 2.0, 40, Math.PI / 5, 0.4, 1);
-    spot.position.set(0, 10, 5); spot.castShadow = true;
-    discScene.add(spot);
-    discScene.add(Object.assign(new THREE.PointLight(0x6C63FF, 1.5, 20), { position: new THREE.Vector3(-4, 2, 3) }));
-    discScene.add(Object.assign(new THREE.PointLight(0xFF6584, 1.0, 20), { position: new THREE.Vector3(4, 2, 3) }));
-  }
-
-  function buildDetailDisc(discData) {
-    if (discMesh) discScene.remove(discMesh);
-
-    const color = new THREE.Color(discData.color);
-    const g = new THREE.Group();
-
-    // Body
-    const bGeo = new THREE.CylinderGeometry(2.5, 2.5, 0.15, 128, 1);
-    const bMat = new THREE.MeshPhysicalMaterial({
-      color: 0x0a0a0a, metalness: 0.95, roughness: 0.12,
-      clearcoat: 0.8, clearcoatRoughness: 0.1, reflectivity: 1.0,
-    });
-    const body = new THREE.Mesh(bGeo, bMat);
-    body.castShadow = true; body.receiveShadow = true;
-    g.add(body);
-
-    // Grooves
-    for (let r = 0.7; r < 2.4; r += 0.08) {
-      const gg = new THREE.Mesh(
-        new THREE.TorusGeometry(r, 0.006, 4, 128),
-        new THREE.MeshStandardMaterial({ color: 0x181818, metalness: 0.95, roughness: 0.1 })
-      );
-      gg.rotation.x = Math.PI / 2; gg.position.y = 0.08;
-      g.add(gg);
-    }
-
-    // Iridescent sheen
-    const iGeo = new THREE.CylinderGeometry(2.45, 2.45, 0.005, 128, 1);
-    const iMat = new THREE.MeshPhysicalMaterial({
-      color: 0x000000, metalness: 1.0, roughness: 0.0,
-      clearcoat: 1.0, clearcoatRoughness: 0.0,
-      transparent: true, opacity: 0.15, envMapIntensity: 2.0,
-    });
-    const iri = new THREE.Mesh(iGeo, iMat);
-    iri.position.y = 0.085;
-    g.add(iri);
-
-    // Label
-    const lbl = new THREE.Mesh(
-      new THREE.CylinderGeometry(0.7, 0.7, 0.17, 64, 1),
-      new THREE.MeshStandardMaterial({
-        color, metalness: 0.2, roughness: 0.6,
-        emissive: color, emissiveIntensity: 0.4,
-      })
-    );
-    lbl.castShadow = true;
-    g.add(lbl);
-
-    // Label ring
-    const lr = new THREE.Mesh(
-      new THREE.TorusGeometry(0.7, 0.02, 8, 64),
-      new THREE.MeshStandardMaterial({ color: 0xffffff, metalness: 0.9, roughness: 0.1, transparent: true, opacity: 0.3 })
-    );
-    lr.rotation.x = Math.PI / 2; lr.position.y = 0.09;
-    g.add(lr);
-
-    // Hole + ring
-    g.add(new THREE.Mesh(
-      new THREE.CylinderGeometry(0.1, 0.1, 0.25, 32),
-      new THREE.MeshStandardMaterial({ color: 0x000000, metalness: 1, roughness: 0 })
-    ));
-    const ch = new THREE.Mesh(
-      new THREE.TorusGeometry(0.1, 0.015, 8, 32),
-      new THREE.MeshStandardMaterial({ color: 0xcccccc, metalness: 0.95, roughness: 0.05 })
-    );
-    ch.rotation.x = Math.PI / 2; ch.position.y = 0.09;
-    g.add(ch);
-
-    // Outer rim glow
-    const rim = new THREE.Mesh(
-      new THREE.TorusGeometry(2.5, 0.04, 12, 128),
-      new THREE.MeshStandardMaterial({
-        color, emissive: color, emissiveIntensity: 0.8,
-        metalness: 0.95, roughness: 0.05, transparent: true, opacity: 0.8,
-      })
-    );
-    rim.rotation.x = Math.PI / 2;
-    g.add(rim);
-
-    const glow = new THREE.Mesh(
-      new THREE.TorusGeometry(2.6, 0.15, 8, 128),
-      new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.08 })
-    );
-    glow.rotation.x = Math.PI / 2;
-    g.add(glow);
-
-    g.rotation.x = Math.PI * 0.1;
-    discMesh = g;
-    discScene.add(discMesh);
-  }
-
-  function animateDisc() {
-    discAnimId = requestAnimationFrame(animateDisc);
-    const t = performance.now() * 0.001;
-    if (discMesh) {
-      discMesh.rotation.y += 0.008;
-      discMesh.position.y = Math.sin(t * 0.6) * 0.1;
-    }
-    discRenderer.render(discScene, discCamera);
-  }
-
-  function stopDiscAnim() { if (discAnimId) { cancelAnimationFrame(discAnimId); discAnimId = null; } }
-
-  // ==========================================================
-  //  NAVIGATION
-  // ==========================================================
-  function showView(view) {
-    $$('.view').forEach(v => v.classList.remove('active'));
-    view.classList.add('active');
-    view.style.animation = 'none';
-    void view.offsetWidth;
-    view.style.animation = '';
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
+  modalClose.addEventListener('click', closeModal);
+  modalLaunch.addEventListener('click', e => { if (e.target === modalLaunch) closeModal(); });
 
   function openDisc(discId) {
     currentDiscId = discId;
     const disc = DISCS.find(d => d.id === discId);
     if (!disc) return;
 
-    // ローディング演出
-    loadingOv.classList.add('active');
+    // モーダルにディスク情報をセット
+    const ring = $('#modal-disc-ring');
+    ring.style.boxShadow = `0 0 0 3px ${disc.color}44, 0 0 30px ${disc.color}33`;
+    const inner = ring.querySelector('.modal-disc-inner');
+    inner.style.background = disc.color;
 
-    setTimeout(() => {
-      stopShelfAnim();
+    const nameEl = $('#modal-launch-name');
+    nameEl.textContent = disc.name;
+    nameEl.style.background = `linear-gradient(135deg, #fff, ${disc.color})`;
+    nameEl.style.webkitBackgroundClip = 'text';
+    nameEl.style.webkitTextFillColor = 'transparent';
+    nameEl.style.backgroundClip = 'text';
 
-      if (!discRenderer) initDiscScene();
-      buildDetailDisc(disc);
-      stopDiscAnim();
-      animateDisc();
+    $('#modal-launch-desc').textContent = disc.description;
 
-      // 情報表示
-      const nameEl = $('#disc-app-name');
-      nameEl.textContent = disc.name;
-      nameEl.style.background = `linear-gradient(135deg, #fff, ${disc.color})`;
-      nameEl.style.webkitBackgroundClip = 'text';
-      nameEl.style.webkitTextFillColor = 'transparent';
-      nameEl.style.backgroundClip = 'text';
+    $('#modal-launch-tags').innerHTML = disc.tags.map(t =>
+      `<span class="meta-tag"><span class="meta-icon">#</span>${esc(t)}</span>`
+    ).join('');
 
-      $('#disc-description').textContent = disc.description;
+    const btnLaunch = $('#btn-launch');
+    btnLaunch.href = disc.url;
+    btnLaunch.style.background = `linear-gradient(135deg, ${disc.color}, ${shiftHue(disc.color, 30)})`;
+    btnLaunch.style.boxShadow = `0 4px 24px ${disc.color}66`;
 
-      // Tags
-      const metaEl = $('#disc-meta');
-      metaEl.innerHTML = disc.tags.map(t =>
-        `<span class="meta-tag"><span class="meta-icon">#</span>${esc(t)}</span>`
-      ).join('');
+    $('#btn-repo').href = disc.repo;
 
-      // Buttons
-      const btnLaunch = $('#btn-launch');
-      btnLaunch.href = disc.url;
-      btnLaunch.style.background = `linear-gradient(135deg, ${disc.color}, ${shiftHue(disc.color, 30)})`;
-      btnLaunch.style.boxShadow = `0 4px 24px ${disc.color}66`;
-
-      const btnRepo = $('#btn-repo');
-      btnRepo.href = disc.repo;
-
-      loadingOv.classList.remove('active');
-      showView(discView);
-    }, 800); // Loading delay for effect
-  }
-
-  function goHome() {
-    currentDiscId = null;
-    stopDiscAnim();
-    buildShelfDiscs();
-    if (!shelfAnimId) animateShelf();
-    showView(shelfView);
+    openModal();
   }
 
   // ==========================================================
   //  EVENTS
   // ==========================================================
-  btnBack.addEventListener('click', goHome);
-  logoHome.addEventListener('click', goHome);
+  logoHome.addEventListener('click', closeModal);
 
   // ==========================================================
   //  UTILITIES

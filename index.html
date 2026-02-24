@@ -47,41 +47,32 @@
       </div>
     </section>
 
-    <!-- ===== ディスクビュー (Disc Detail / Launch View) ===== -->
-    <section id="disc-view" class="view">
-      <button class="btn-back" id="btn-back">
-        <span class="arrow">←</span> 棚に戻る
-      </button>
+  </main>
 
-      <div class="disc-stage">
-        <div id="disc-3d-container">
-          <canvas id="disc-canvas"></canvas>
-        </div>
-        <div class="disc-info">
-          <h2 class="disc-app-name" id="disc-app-name"></h2>
-          <p class="disc-description" id="disc-description"></p>
-          <div class="disc-meta" id="disc-meta"></div>
-          <div class="disc-actions">
-            <a class="btn-launch" id="btn-launch" href="#" target="_blank" rel="noopener">
-              <span class="launch-icon">▶</span> アプリを起動
-            </a>
-            <a class="btn-repo" id="btn-repo" href="#" target="_blank" rel="noopener">
-              <span class="repo-icon">⟨/⟩</span> リポジトリ
-            </a>
+  <!-- ===== モーダル: ディスク確認 ===== -->
+  <div class="modal-overlay" id="modal-launch">
+    <div class="modal-launch-card">
+      <button class="modal-close" id="modal-launch-close">✕</button>
+      <div class="modal-launch-disc">
+        <div class="modal-disc-ring" id="modal-disc-ring">
+          <div class="modal-disc-inner">
+            <span class="modal-disc-icon">◉</span>
           </div>
         </div>
       </div>
-
-      <!-- ディスク読み込み演出 -->
-      <div class="loading-overlay" id="loading-overlay">
-        <div class="loading-disc-wrapper">
-          <div class="loading-spinner"></div>
-          <p class="loading-text">ディスクを読み込み中…</p>
-        </div>
+      <h3 class="modal-launch-name" id="modal-launch-name"></h3>
+      <p class="modal-launch-desc" id="modal-launch-desc"></p>
+      <div class="modal-launch-tags" id="modal-launch-tags"></div>
+      <div class="modal-launch-actions">
+        <a class="btn-launch" id="btn-launch" href="#" target="_blank" rel="noopener">
+          <span class="launch-icon">▶</span> アプリを起動
+        </a>
+        <a class="btn-repo" id="btn-repo" href="#" target="_blank" rel="noopener">
+          <span class="repo-icon">⟨/⟩</span> リポジトリを見る
+        </a>
       </div>
-    </section>
-
-  </main>
+    </div>
+  </div>
 
   <!-- ===== フッター ===== -->
   <footer id="site-footer">
