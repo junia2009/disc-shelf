@@ -139,23 +139,136 @@
     animateShelf();
   }
 
+  /* ---------- Twinkling Star Field ---------- */
+  let starSizes, starPhases;
+
   function createParticleField(scene) {
-    const count = 300;
+    const count = 500;
     const geo = new THREE.BufferGeometry();
     const pos = new Float32Array(count * 3);
+    starSizes  = new Float32Array(count);
+    starPhases = new Float32Array(count);
+    const colors = new Float32Array(count * 3);
+    const palette = [
+      new THREE.Color(0xffffff),
+      new THREE.Color(0xcfc9ff),
+      new THREE.Color(0xa8d8ff),
+      new THREE.Color(0xffd6e0),
+      new THREE.Color(0xb8ffec),
+    ];
     for (let i = 0; i < count; i++) {
-      pos[i * 3]     = (Math.random() - .5) * 50;
-      pos[i * 3 + 1] = (Math.random() - .5) * 30;
-      pos[i * 3 + 2] = (Math.random() - .5) * 50;
+      pos[i * 3]     = (Math.random() - .5) * 60;
+      pos[i * 3 + 1] = (Math.random() - .5) * 35;
+      pos[i * 3 + 2] = (Math.random() - .5) * 60;
+      starSizes[i]  = 0.04 + Math.random() * 0.12;
+      starPhases[i] = Math.random() * Math.PI * 2;
+      const c = palette[Math.floor(Math.random() * palette.length)];
+      colors[i * 3] = c.r; colors[i * 3 + 1] = c.g; colors[i * 3 + 2] = c.b;
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('color',    new THREE.BufferAttribute(colors, 3));
+    geo.setAttribute('size',     new THREE.BufferAttribute(starSizes, 1));
+
     const mat = new THREE.PointsMaterial({
-      color: 0x6C63FF, size: 0.06,
-      transparent: true, opacity: 0.6, sizeAttenuation: true,
+      size: 0.1, vertexColors: true,
+      transparent: true, opacity: 0.85, sizeAttenuation: true,
+      blending: THREE.AdditiveBlending, depthWrite: false,
     });
     const pts = new THREE.Points(geo, mat);
     pts.userData.isParticles = true;
     scene.add(pts);
+  }
+
+  function twinkleStars(time) {
+    const pts = shelfScene.children.find(c => c.userData?.isParticles);
+    if (!pts) return;
+    const sizes = pts.geometry.attributes.size;
+    for (let i = 0; i < sizes.count; i++) {
+      const base = starSizes[i];
+      const flicker = Math.sin(time * (1.5 + (i % 5) * 0.4) + starPhases[i]);
+      sizes.array[i] = base * (0.5 + 0.5 * flicker);
+    }
+    sizes.needsUpdate = true;
+  }
+
+  /* ---------- Shooting Stars ---------- */
+  const shootingStars = [];
+
+  function spawnShootingStar() {
+    const colors = [0xffffff, 0xcfc9ff, 0xa8d8ff, 0xffd6e0, 0xb8ffec];
+    const color = colors[Math.floor(Math.random() * colors.length)];
+
+    // Start position: random spot in the upper area
+    const sx = (Math.random() - 0.5) * 40;
+    const sy = 8 + Math.random() * 10;
+    const sz = -5 - Math.random() * 20;
+
+    // Direction: downward at an angle
+    const angle = (-0.3 - Math.random() * 0.5);
+    const speed = 18 + Math.random() * 14;
+    const dx = (Math.random() > 0.5 ? 1 : -1) * speed * Math.cos(angle);
+    const dy = speed * Math.sin(angle);
+    const dz = (Math.random() - 0.5) * 4;
+
+    const tailLen = 8;
+    const geo = new THREE.BufferGeometry();
+    const positions = new Float32Array(tailLen * 3);
+    const alphas = new Float32Array(tailLen);
+    for (let i = 0; i < tailLen; i++) {
+      positions[i * 3] = sx; positions[i * 3 + 1] = sy; positions[i * 3 + 2] = sz;
+      alphas[i] = 1.0 - i / tailLen;
+    }
+    geo.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+
+    const mat = new THREE.PointsMaterial({
+      color, size: 0.12, transparent: true, opacity: 0.9,
+      blending: THREE.AdditiveBlending, depthWrite: false, sizeAttenuation: true,
+    });
+    const mesh = new THREE.Points(geo, mat);
+    shelfScene.add(mesh);
+
+    shootingStars.push({
+      mesh, geo, mat, tailLen,
+      x: sx, y: sy, z: sz, dx, dy, dz,
+      life: 0, maxLife: 1.2 + Math.random() * 0.6,
+    });
+  }
+
+  let lastShootTime = 0;
+  function updateShootingStars(time, dt) {
+    // Spawn: random interval 2–6 sec
+    if (time - lastShootTime > 2 + Math.random() * 4) {
+      spawnShootingStar();
+      lastShootTime = time;
+    }
+
+    for (let i = shootingStars.length - 1; i >= 0; i--) {
+      const s = shootingStars[i];
+      s.life += dt;
+      s.x += s.dx * dt;
+      s.y += s.dy * dt;
+      s.z += s.dz * dt;
+
+      const posArr = s.geo.attributes.position.array;
+      // Shift tail
+      for (let j = (s.tailLen - 1) * 3; j >= 3; j -= 3) {
+        posArr[j] = posArr[j - 3];
+        posArr[j + 1] = posArr[j - 2];
+        posArr[j + 2] = posArr[j - 1];
+      }
+      posArr[0] = s.x; posArr[1] = s.y; posArr[2] = s.z;
+      s.geo.attributes.position.needsUpdate = true;
+
+      // Fade out
+      const fade = Math.max(0, 1 - s.life / s.maxLife);
+      s.mat.opacity = fade * 0.9;
+
+      if (s.life >= s.maxLife) {
+        shelfScene.remove(s.mesh);
+        s.geo.dispose(); s.mat.dispose();
+        shootingStars.splice(i, 1);
+      }
+    }
   }
 
   // --- 3Dディスクを1枚つくる ---
@@ -255,17 +368,25 @@
     });
   }
 
+  let prevTime = 0;
   function animateShelf() {
     shelfAnimId = requestAnimationFrame(animateShelf);
     const time = performance.now() * 0.001;
+    const dt = Math.min(time - prevTime, 0.1);
+    prevTime = time;
 
     if (autoRotate && !isDragging) targetCarouselAngle += 0.0015;
     carouselAngle += (targetCarouselAngle - carouselAngle) * 0.225;
     layoutCarousel(time);
 
+    // Twinkle stars
+    twinkleStars(time);
     shelfScene.children.forEach(c => {
-      if (c.userData?.isParticles) c.rotation.y = time * 0.02;
+      if (c.userData?.isParticles) c.rotation.y = time * 0.015;
     });
+
+    // Shooting stars
+    updateShootingStars(time, dt);
 
     shelfRenderer.render(shelfScene, shelfCamera);
   }
