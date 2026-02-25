@@ -64,6 +64,15 @@
       repo: 'https://github.com/junia2009/caesar_decoder',
       tags: ['JS', 'tool'],
     },
+    {
+      id: 'hex-decoder',
+      name: 'Hexデコーダー',
+      description: 'Hexを文字列に復号する。',
+      color: '#00C853', // 緑系
+      url: 'https://junia2009.github.io/hex-decoder/',
+      repo: 'https://github.com/junia2009/hex-decoder/',
+      tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
