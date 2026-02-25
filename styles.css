@@ -1,3 +1,116 @@
+.list-header {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+#list-view {
+  display: none;
+  animation: fadeUp .5s ease both;
+}
+#list-view.active {
+  display: block;
+}
+
+.disc-list-item {
+  /* ...既存... */
+  transition: transform .22s cubic-bezier(.4,0,.2,1), box-shadow .22s;
+}
+.disc-list-item:hover {
+  transform: translateY(-6px) scale(1.025) rotate(-1deg);
+  box-shadow: 0 12px 36px rgba(0,0,0,.22);
+}
+/* ---------- List View ---------- */
+.btn-list-view, .btn-back-shelf {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: .5rem 1.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .2s, opacity .3s;
+  margin-left: 1rem;
+}
+
+.btn-back-shelf {
+  display: block;
+  margin: 2.5rem auto 0 auto;
+  padding: 0.85rem 2.8rem;
+  font-size: 1.18rem;
+  font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+  font-weight: 900;
+  letter-spacing: 2.2px;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #111 60%, #222 100%);
+  color: #FFD700;
+  border: 2.5px solid #FFD700;
+  box-shadow: 0 0 16px 2px #FFD70055, 0 2px 24px #000 inset;
+  text-shadow: 0 0 8px #FFD70099, 0 1px 0 #fff2, 0 0 2px #fff8;
+  cursor: pointer;
+  transition: background .18s, color .18s, border .18s, transform .16s, box-shadow .18s;
+  position: relative;
+  z-index: 10;
+  opacity: 1;
+  pointer-events: auto;
+}
+.btn-back-shelf:hover {
+  background: linear-gradient(90deg, #222 0%, #111 100%);
+  color: #fffbe6;
+  border-color: #FFD700;
+  box-shadow: 0 0 32px 6px #FFD700cc, 0 2px 32px #000 inset;
+  transform: translateY(-2px) scale(1.06) skewX(-6deg);
+  text-shadow: 0 0 16px #FFD700cc, 0 2px 8px #fff8;
+}
+.btn-list-view:hover, .btn-back-shelf:hover {
+  background: var(--accent-secondary);
+}
+
+.disc-list {
+  list-style: none;
+  padding: 0;
+  margin: 2rem auto 0 auto;
+  max-width: 600px;
+}
+.disc-list-item {
+  background: var(--bg-card);
+  margin-bottom: 1.2rem;
+  padding: 1.2rem 1.5rem;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  display: flex;
+  flex-direction: column;
+  gap: .7rem;
+  border-left: 8px solid var(--accent);
+}
+.disc-list-main {
+  display: flex;
+  flex-direction: column;
+  gap: .2rem;
+}
+.disc-list-name {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+.disc-list-desc {
+  font-size: .92rem;
+  color: var(--text-secondary);
+}
+.disc-list-links {
+  display: flex;
+  gap: 1.2rem;
+}
+.disc-list-link {
+  color: var(--accent);
+  text-decoration: underline;
+  font-weight: 700;
+  font-size: .98rem;
+  transition: color .2s;
+}
+.disc-list-link:hover {
+  color: var(--accent-secondary);
+}
 /* ============================================
    DISC SHELF — Portal Stylesheet
    ============================================ */
@@ -67,9 +180,9 @@ body {
 /* ---------- Header ---------- */
 #site-header {
   position: sticky; top: 0; z-index: 100;
-  background: rgba(8,8,15,.8);
-  backdrop-filter: blur(24px) saturate(1.5);
-  -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    background: rgba(8,8,15,.8);
+    -webkit-backdrop-filter: blur(24px) saturate(1.5);
+    backdrop-filter: blur(24px) saturate(1.5);
   border-bottom: 1px solid var(--border);
   padding: 0 2rem;
 }
@@ -78,11 +191,40 @@ body {
   max-width: 1280px; margin: 0 auto;
   display: flex; align-items: center; justify-content: space-between;
   height: 64px;
+  position: relative;
+}
+.btn-list-view {
+  display: inline-block;
+  margin: 0 auto 1.2rem auto;
+  padding: 0.85rem 2.8rem;
+  font-size: 1.18rem;
+  font-family: 'Orbitron', 'Noto Sans JP', sans-serif;
+  font-weight: 900;
+  letter-spacing: 2.2px;
+  border-radius: 18px;
+  background: linear-gradient(90deg, #111 60%, #222 100%);
+  color: #FFD700;
+  border: 2.5px solid #FFD700;
+  box-shadow: 0 0 16px 2px #FFD70055, 0 2px 24px #000 inset;
+  text-shadow: 0 0 8px #FFD70099, 0 1px 0 #fff2, 0 0 2px #fff8;
+  cursor: pointer;
+  transition: background .18s, color .18s, border .18s, transform .16s, box-shadow .18s;
+  position: relative;
+  z-index: 10;
+}
+.btn-list-view:hover {
+  background: linear-gradient(90deg, #222 0%, #111 100%);
+  color: #fffbe6;
+  border-color: #FFD700;
+  box-shadow: 0 0 32px 6px #FFD700cc, 0 2px 32px #000 inset;
+  transform: translateY(-2px) scale(1.06) skewX(-6deg);
+  text-shadow: 0 0 16px #FFD700cc, 0 2px 8px #fff8;
 }
 
 .logo {
   display: flex; align-items: center; gap: .6rem;
-  cursor: pointer; user-select: none;
+    cursor: pointer; user-select: none;
+    -webkit-user-select: none;
 }
 
 .logo-icon {
@@ -146,7 +288,8 @@ body {
 .disc-tooltip {
   position: absolute; pointer-events: none;
   background: rgba(10,10,20,.92);
-  backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
   border: 1px solid var(--border);
   border-radius: 12px; padding: .7rem 1.1rem;
   z-index: 50; transition: opacity .2s ease;
@@ -172,8 +315,8 @@ body {
   position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
   background: rgba(0,0,0,.65);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
   opacity: 0; visibility: hidden;
   transition: opacity .35s ease, visibility .35s ease;
 }

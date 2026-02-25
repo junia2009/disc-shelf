@@ -614,5 +614,48 @@
   // ==========================================================
   //  INIT
   // ==========================================================
+  // ===== 一覧ビュー切り替え・生成ロジック =====
+    const listView = document.getElementById('list-view');
+    const btnListView = document.getElementById('btn-list-view');
+    const btnBackShelf = document.getElementById('btn-back-shelf');
+    const discListContainer = document.getElementById('disc-list-container');
+
+    const shelfViewSection = document.getElementById('shelf-view');
+    function showListView() {
+      shelfViewSection.classList.remove('active');
+      listView.classList.add('active');
+      renderDiscList();
+    }
+    function hideListView() {
+      listView.classList.remove('active');
+      shelfViewSection.classList.add('active');
+    }
+    if (btnListView) btnListView.addEventListener('click', showListView);
+    if (btnBackShelf) btnBackShelf.addEventListener('click', hideListView);
+
+    function renderDiscList() {
+      if (!discListContainer) return;
+      discListContainer.innerHTML = '';
+      const ul = document.createElement('ul');
+      ul.className = 'disc-list';
+      DISCS.forEach(disc => {
+        const li = document.createElement('li');
+        li.className = 'disc-list-item';
+        li.style.borderLeft = `8px solid ${disc.color}`;
+        li.innerHTML = `
+          <div class="disc-list-main">
+            <span class="disc-list-name">${disc.name}</span>
+            <span class="disc-list-desc">${disc.description}</span>
+          </div>
+          <div class="disc-list-links">
+            <a href="${disc.url}" target="_blank" rel="noopener" class="disc-list-link">アプリを開く</a>
+            <a href="${disc.repo}" target="_blank" rel="noopener" class="disc-list-link">リポジトリ</a>
+          </div>
+        `;
+        ul.appendChild(li);
+      });
+      discListContainer.appendChild(ul);
+    }
+
   initShelfScene();
 })();
