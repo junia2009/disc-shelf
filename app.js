@@ -46,6 +46,15 @@
       repo: 'https://github.com/junia2009/base64-decoder',
       tags: ['JS', 'tool'],
     },
+    {
+      id: 'rsa-decoder',
+      name: 'RSA デコーダー',
+      description: 'RSA暗号の暗号化もしくは復号を実施する',
+      color: '#FFD700',
+      url: 'https://junia2009.github.io/RSA_decoder/',
+      repo: 'https://github.com/junia2009/RSA_decoder',
+      tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
