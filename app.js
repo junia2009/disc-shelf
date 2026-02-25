@@ -37,6 +37,15 @@
       repo: 'https://github.com/junia2009/grow-recruiter-app',
       tags: ['HTML', 'tool'],
     },
+    {
+      id: 'base64-decoder',
+      name: 'Base64デコーダー',
+      description: 'Base64の暗号化および復号を実施する',
+      color: '#00B4D8',
+      url: 'https://junia2009.github.io/base64-decoder/',
+      repo: 'https://github.com/junia2009/base64-decoder',
+      tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
