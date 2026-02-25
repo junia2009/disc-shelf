@@ -55,6 +55,15 @@
       repo: 'https://github.com/junia2009/RSA_decoder',
       tags: ['JS', 'tool'],
     },
+    {
+      id: 'caesar-decoder',
+      name: 'Caesarデコーダー',
+      description: 'シーザー暗号の復号を実施する',
+      color: '#FF9800', // オレンジ系で映える
+      url: 'https://junia2009.github.io/caesar_decoder/',
+      repo: 'https://github.com/junia2009/caesar_decoder',
+      tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
