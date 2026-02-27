@@ -73,6 +73,15 @@
       repo: 'https://github.com/junia2009/hex-decoder/',
       tags: ['JS', 'tool'],
     },
+      {
+        id: 'log_hunter',
+        name: 'ログハンター',
+        description: 'ログファイルから怪しい箇所やフラグを抽出する。',
+        color: '#00D2FF', // シアン系（既存と被らない色）
+        url: 'https://junia2009.github.io/log_hunter/',
+        repo: 'https://github.com/junia2009/log_hunter/',
+        tags: ['JS', 'tool'],
+      },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
