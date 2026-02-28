@@ -153,6 +153,7 @@
   //  THREE.JS — SHELF VIEW (3D Carousel)
   // ==========================================================
   let shelfScene, shelfCamera, shelfRenderer;
+
   let shelfDiscs3D = [];
   let shelfRaycaster, shelfMouse;
   let shelfAnimId = null;
@@ -160,6 +161,9 @@
   let carouselAngle = 0, targetCarouselAngle = 0;
   let isDragging = false, dragStartX = 0, dragStartAngle = 0;
   let hoveredDisc = null;
+  // ground/groundMatをグローバル化
+  let ground = null;
+  let groundMat = null;
 
   function initShelfScene() {
     const container = $('#shelf-3d-container');
@@ -201,11 +205,11 @@
 
     // Ground
     const groundGeo = new THREE.PlaneGeometry(60, 60);
-    const groundMat = new THREE.MeshStandardMaterial({
+    groundMat = new THREE.MeshStandardMaterial({
       color: 0x08080f, metalness: 0.9, roughness: 0.4,
       transparent: true, opacity: 0.5,
     });
-    const ground = new THREE.Mesh(groundGeo, groundMat);
+    ground = new THREE.Mesh(groundGeo, groundMat);
     ground.rotation.x = -Math.PI / 2;
     ground.position.y = -2.5;
     ground.receiveShadow = true;
@@ -434,6 +438,14 @@
   function buildShelfDiscs() {
     shelfDiscs3D.forEach(d => shelfScene.remove(d));
     shelfDiscs3D = [];
+    // ground色をカテゴリごとに変更
+    if (groundMat) {
+      let color = 0x08080f;
+      if (currentCategory === 'セキュリティ') color = 0x1976d2; // 青ベース
+      else if (currentCategory === 'ゲーム') color = 0xd32f2f; // 赤ベース
+      else if (currentCategory === 'その他') color = 0xffc107; // 黄ベース
+      groundMat.color.setHex(color);
+    }
     // 選択中カテゴリのみ表示
     const filtered = DISCS.filter(d => d.category === currentCategory);
     filtered.forEach((disc, i) => {
