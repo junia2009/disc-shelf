@@ -2,6 +2,8 @@
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
 (() => {
+    // 現在選択中のカテゴリ
+    let currentCategory = 'セキュリティ';
   'use strict';
 
   // ==========================================================
@@ -18,6 +20,7 @@
       url: 'https://junia2009.github.io/disc-shelf/',
       repo: 'https://github.com/junia2009/disc-shelf',
       tags: ['Three.js', 'Portal', 'PWA'],
+      category: 'その他',
     },
     {
       id: 'my-timer',
@@ -27,6 +30,7 @@
       url: 'https://junia2009.github.io/app_timer/',
       repo: 'https://github.com/junia2009/app_timer',
       tags: ['JS', 'tool'],
+      category: 'その他',
     },
     {
       id: 'grow_model',
@@ -36,6 +40,7 @@
       url: 'https://junia2009.github.io/grow-recruiter-app/',
       repo: 'https://github.com/junia2009/grow-recruiter-app',
       tags: ['HTML', 'tool'],
+      category: 'その他',
     },
     {
       id: 'base64-decoder',
@@ -45,6 +50,7 @@
       url: 'https://junia2009.github.io/base64-decoder/',
       repo: 'https://github.com/junia2009/base64-decoder',
       tags: ['JS', 'tool'],
+      category: 'セキュリティ',
     },
     {
       id: 'rsa-decoder',
@@ -54,6 +60,7 @@
       url: 'https://junia2009.github.io/RSA_decoder/',
       repo: 'https://github.com/junia2009/RSA_decoder',
       tags: ['JS', 'tool'],
+      category: 'セキュリティ',
     },
     {
       id: 'caesar-decoder',
@@ -63,6 +70,7 @@
       url: 'https://junia2009.github.io/caesar_decoder/',
       repo: 'https://github.com/junia2009/caesar_decoder',
       tags: ['JS', 'tool'],
+      category: 'セキュリティ',
     },
     {
       id: 'hex-decoder',
@@ -72,15 +80,17 @@
       url: 'https://junia2009.github.io/hex-decoder/',
       repo: 'https://github.com/junia2009/hex-decoder/',
       tags: ['JS', 'tool'],
+      category: 'セキュリティ',
     },
     {
-        id: 'log_hunter',
-        name: 'ログハンター',
-        description: 'ログファイルから怪しい箇所やフラグを抽出する。',
-        color: '#00D2FF', // シアン系（既存と被らない色）
-        url: 'https://junia2009.github.io/log_hunter/',
-        repo: 'https://github.com/junia2009/log_hunter/',
-        tags: ['JS', 'tool'],
+      id: 'log_hunter',
+      name: 'ログハンター',
+      description: 'ログファイルから怪しい箇所やフラグを抽出する。',
+      color: '#00D2FF', // シアン系（既存と被らない色）
+      url: 'https://junia2009.github.io/log_hunter/',
+      repo: 'https://github.com/junia2009/log_hunter/',
+      tags: ['JS', 'tool'],
+      category: 'セキュリティ',
     },
     {
     id: 'photo-geo-locator',
@@ -90,6 +100,7 @@
     url: 'https://junia2009.github.io/photo_geo_locator/',
     repo: 'https://github.com/junia2009/photo_geo_locator',
     tags: ['JS', 'tool'],
+    category: 'セキュリティ',
     },
     // --- 今後アプリを作るたびに追加 ---
   ];
@@ -393,10 +404,30 @@
   function buildShelfDiscs() {
     shelfDiscs3D.forEach(d => shelfScene.remove(d));
     shelfDiscs3D = [];
-    DISCS.forEach((disc, i) => {
+    // 選択中カテゴリのみ表示
+    const filtered = DISCS.filter(d => d.category === currentCategory);
+    filtered.forEach((disc, i) => {
       const mesh = createDisc3D(disc, i);
       shelfScene.add(mesh);
       shelfDiscs3D.push(mesh);
+    });
+    // カテゴリ切り替えUIのイベント設定
+    window.addEventListener('DOMContentLoaded', () => {
+      document.querySelectorAll('.category-btn').forEach(btn => {
+        btn.addEventListener('click', e => {
+          const cat = btn.getAttribute('data-category');
+          if (cat && cat !== currentCategory) {
+            currentCategory = cat;
+            buildShelfDiscs();
+          }
+          // ボタンのactive状態切替
+          document.querySelectorAll('.category-btn').forEach(b => b.classList.remove('active'));
+          btn.classList.add('active');
+        });
+      });
+      // 初期カテゴリボタンにactive付与
+      const firstBtn = document.querySelector('.category-btn[data-category="' + currentCategory + '"]');
+      if (firstBtn) firstBtn.classList.add('active');
     });
   }
 

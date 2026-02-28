@@ -1,3 +1,26 @@
+/* ---------- Category Switcher ---------- */
+.category-switcher {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1.2rem;
+}
+.category-btn {
+  background: var(--bg-card);
+  color: var(--accent);
+  border: 2px solid var(--accent);
+  border-radius: 12px;
+  padding: 0.5rem 1.5rem;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background .18s, color .18s, border .18s;
+}
+.category-btn.active, .category-btn:hover {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent-secondary);
+}
 .list-header {
   text-align: center;
   margin-bottom: 1.5rem;
