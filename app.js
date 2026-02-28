@@ -122,6 +122,16 @@
     tags: ['JS', 'tool'],
     category: 'セキュリティ',
     },
+    {
+    id: 'cosmic-shooter',
+    name: 'Cosmic Shooter',
+    description: '宇宙を舞台にしたシューティングゲーム',
+    color: '#FFC312', 
+    url: 'https://junia2009.github.io/cosmic_shooter/',
+    repo: 'https://github.com/junia2009/cosmic_shooter',
+    tags: ['JS', 'tool'],
+    category: 'ゲーム',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
