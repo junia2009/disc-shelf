@@ -716,6 +716,7 @@
     function hideListView() {
       listView.classList.remove('active');
       shelfViewSection.classList.add('active');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
     if (btnListView) btnListView.addEventListener('click', showListView);
     if (btnBackShelf) btnBackShelf.addEventListener('click', hideListView);
