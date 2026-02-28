@@ -73,7 +73,7 @@
       repo: 'https://github.com/junia2009/hex-decoder/',
       tags: ['JS', 'tool'],
     },
-      {
+    {
         id: 'log_hunter',
         name: 'ログハンター',
         description: 'ログファイルから怪しい箇所やフラグを抽出する。',
@@ -81,7 +81,16 @@
         url: 'https://junia2009.github.io/log_hunter/',
         repo: 'https://github.com/junia2009/log_hunter/',
         tags: ['JS', 'tool'],
-      },
+    },
+    {
+    id: 'photo-geo-locator',
+    name: 'Photoジオグラフィ',
+    description: '写真の位置情報を調査する',
+    color: '#FFC312', // イエロー系（未使用色）
+    url: 'https://junia2009.github.io/photo_geo_locator/',
+    repo: 'https://github.com/junia2009/photo_geo_locator',
+    tags: ['JS', 'tool'],
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
