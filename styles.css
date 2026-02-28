@@ -1,3 +1,32 @@
+/* ---------- Warp Portal Button ---------- */
+.warp-portal-btn {
+  background: radial-gradient(circle at 60% 40%, #6C63FF 0%, #00C9A7 60%, #08080f 100%);
+  color: #fff;
+  border: 2.5px solid #FFD700;
+  border-radius: 50px;
+  padding: 0.6rem 2.2rem 0.6rem 2.2rem;
+  font-size: 1.08rem;
+  font-weight: 900;
+  letter-spacing: 2px;
+  box-shadow: 0 0 16px 4px #6C63FF88, 0 0 32px 8px #FFD70044, 0 2px 16px #00C9A755;
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  margin-left: 1.2rem;
+  transition: background .22s, color .18s, box-shadow .22s, transform .16s, border .18s;
+  animation: warp-glow 2.2s infinite alternate;
+}
+.warp-portal-btn:hover, .warp-portal-btn:focus {
+  background: radial-gradient(circle at 40% 60%, #FFD700 0%, #6C63FF 60%, #00C9A7 100%);
+  color: #222;
+  border-color: #6C63FF;
+  box-shadow: 0 0 32px 8px #FFD700cc, 0 0 48px 12px #6C63FF99;
+  transform: scale(1.08) rotate(-2deg);
+}
+@keyframes warp-glow {
+  0% { box-shadow: 0 0 16px 4px #6C63FF88, 0 0 32px 8px #FFD70044, 0 2px 16px #00C9A755; }
+  100% { box-shadow: 0 0 32px 12px #FFD700cc, 0 0 48px 16px #6C63FF99; }
+}
 /* ---------- Category Switcher ---------- */
 .category-switcher {
   display: flex;

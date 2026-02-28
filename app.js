@@ -2,9 +2,29 @@
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
 (() => {
-    // 現在選択中のカテゴリ
-    let currentCategory = 'セキュリティ';
+  // 現在選択中のカテゴリ
+  let currentCategory = 'セキュリティ';
   'use strict';
+  // ===== ワープボタンでカテゴリ循環切り替え =====
+  window.addEventListener('DOMContentLoaded', () => {
+    const warpBtn = document.getElementById('warp-portal-btn');
+    const catLabel = document.getElementById('current-category-label');
+    function updateCategoryLabel() {
+      if (catLabel) catLabel.textContent = currentCategory;
+    }
+    if (warpBtn) {
+      warpBtn.addEventListener('click', () => {
+        const categories = ['セキュリティ', 'ゲーム', 'その他'];
+        let idx = categories.indexOf(currentCategory);
+        idx = (idx + 1) % categories.length;
+        currentCategory = categories[idx];
+        buildShelfDiscs();
+        updateCategoryLabel();
+      });
+    }
+    // 初期表示も反映
+    updateCategoryLabel();
+  });
 
   // ==========================================================
   //  APP DATA — ディスク（＝アプリ）一覧
