@@ -132,6 +132,16 @@
     tags: ['JS', 'tool'],
     category: 'ゲーム',
     },
+    {
+    id: 'breaking-block',
+    name: 'Breaking Block',
+    description: 'ブロック崩し',
+    color: '#E53935', // 赤系
+    url: 'https://junia2009.github.io/breaking_block/',
+    repo: 'https://github.com/junia2009/breaking_block',
+    tags: ['JS', 'tool'],
+    category: 'ゲーム',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
