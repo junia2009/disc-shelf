@@ -142,6 +142,16 @@
     tags: ['JS', 'tool'],
     category: 'ゲーム',
     },
+    {
+    id: 'my-aquarium',
+    name: 'エビ育成',
+    description: '癒しを求めてエビを育成するためのゲーム',
+    color: '#26C6DA', // アクア系
+    url: 'https://junia2009.github.io/my_aquarium/',
+    repo: 'https://github.com/junia2009/my_aquarium/',
+    tags: ['JS', 'game'],
+    category: 'ゲーム',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
