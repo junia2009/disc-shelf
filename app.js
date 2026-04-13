@@ -192,6 +192,26 @@
       tags: ['Firebase', 'tool'],
       category: 'その他',
     },
+    {
+      id: 'dragon-cradle',
+      name: 'Dragon Cradle',
+      description: 'ドラゴンを育てて戦わせる育成バトルゲーム',
+      color: '#7B2FFF',
+      url: 'https://junia2009.github.io/dragon-cradle/',
+      repo: 'https://github.com/junia2009/dragon-cradle',
+      tags: ['Three.js', 'game'],
+      category: 'ゲーム',
+    },
+    {
+      id: 'droid-navi',
+      name: 'RT91 Navi',
+      description: 'RT91アストロメク・ナビゲータードロイド - 天気・時刻をお届け',
+      color: '#b31e22',
+      url: 'https://junia2009.github.io/droid_navi/',
+      repo: 'https://github.com/junia2009/droid_navi',
+      tags: ['Three.js', 'PWA'],
+      category: 'その他',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
