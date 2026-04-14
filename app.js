@@ -212,6 +212,16 @@
       tags: ['Three.js', 'PWA'],
       category: 'その他',
     },
+    {
+      id: 'suudoku-resolver',
+      name: 'ナンプレ解くマン',
+      description: '写真撮影、もしくは写真選択で数独を自動解読する',
+      color: '#43A047',
+      url: 'https://junia2009.github.io/suudoku_resolver/',
+      repo: 'https://github.com/junia2009/suudoku_resolver',
+      tags: ['JS', 'OCR'],
+      category: 'その他',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
