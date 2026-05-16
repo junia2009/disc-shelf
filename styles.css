@@ -686,6 +686,13 @@ body {
   font-size: .75rem; letter-spacing: .5px;
   border-top: 1px solid var(--border);
 }
+.app-version {
+  font-family: 'Orbitron', sans-serif;
+  font-size: .65rem;
+  color: var(--accent);
+  opacity: 0.6;
+  letter-spacing: 1px;
+}
 
 /* ---------- Scrollbar ---------- */
 ::-webkit-scrollbar { width: 6px; }

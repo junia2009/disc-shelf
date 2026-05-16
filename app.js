@@ -1,6 +1,8 @@
 /* ============================================
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
+const VERSION = 'v1.2.1';
+
 (() => {
   // 現在選択中のカテゴリ
   let currentCategory = 'セキュリティ';
@@ -1178,6 +1180,9 @@
         discListContainer.appendChild(ul);
       });
     } // end renderDiscList
+
+  const verEl = document.getElementById('app-version');
+  if (verEl) verEl.textContent = VERSION;
 
   initShelfScene();
 })();
