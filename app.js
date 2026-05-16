@@ -319,11 +319,22 @@
   let shelfAnimId = null;
   let autoRotate = true;
   let carouselAngle = 0, targetCarouselAngle = 0;
-  let isDragging = false, dragStartX = 0, dragStartAngle = 0;
+  let isDragging = false, dragStartX = 0, dragStartY = 0, dragStartAngle = 0;
+  let dragLockAxis = null; // 'x' | 'y' | null
   let hoveredDisc = null;
   // ground/groundMatをグローバル化
   let ground = null;
   let groundMat = null;
+
+  // ===== 3Dシリンダー: 段管理 =====
+  const DISCS_PER_ROW = 6;     // 1段あたりの最大枚数
+  const ROW_GAP = 2.6;          // 段間のY距離
+  const SWIPE_THRESHOLD = 60;   // 段切替に必要な縦スワイプ距離(px)
+  const AXIS_LOCK_THRESHOLD = 20; // ドラッグ軸ロック判定距離(px)
+  let activeRow = 0;            // 現在のアクティブ段
+  let activeRowFloat = 0;       // アニメーション用補間値
+  let totalRows = 1;            // 総段数
+  let rowDistribution = [];     // 各段の枚数 [6, 5] 等
 
   function initShelfScene() {
     const container = $('#shelf-3d-container');
@@ -608,11 +619,38 @@
     }
     // 選択中カテゴリのみ表示
     const filtered = DISCS.filter(d => d.category === currentCategory);
-    filtered.forEach((disc, i) => {
-      const mesh = createDisc3D(disc, i);
-      shelfScene.add(mesh);
-      shelfDiscs3D.push(mesh);
+
+    // ===== 段分割: 枚数に応じて均等に配分 =====
+    const count = filtered.length;
+    totalRows = Math.max(1, Math.ceil(count / DISCS_PER_ROW));
+    rowDistribution = [];
+    let remaining = count;
+    for (let r = 0; r < totalRows; r++) {
+      const rowsLeft = totalRows - r;
+      const thisRow = Math.ceil(remaining / rowsLeft);
+      rowDistribution.push(thisRow);
+      remaining -= thisRow;
+    }
+
+    // ===== ディスク生成（rowIndex / colIndex / rowSize をuserDataに保持） =====
+    let discIdx = 0;
+    rowDistribution.forEach((rowSize, rowIndex) => {
+      for (let col = 0; col < rowSize; col++) {
+        const disc = filtered[discIdx];
+        const mesh = createDisc3D(disc, discIdx);
+        mesh.userData.rowIndex = rowIndex;
+        mesh.userData.colIndex = col;
+        mesh.userData.rowSize = rowSize;
+        shelfScene.add(mesh);
+        shelfDiscs3D.push(mesh);
+        discIdx++;
+      }
     });
+
+    // 段位置をリセット
+    activeRow = 0;
+    activeRowFloat = 0;
+    updateRowIndicator();
     // カテゴリ切り替えUIのイベント設定
     window.addEventListener('DOMContentLoaded', () => {
       document.querySelectorAll('.category-btn').forEach(btn => {
@@ -634,24 +672,44 @@
   }
 
   function layoutCarousel(time) {
-    const count = shelfDiscs3D.length;
-    if (!count) return;
-    const radius = Math.max(5, count * 1.3);
+    if (!shelfDiscs3D.length) return;
 
     shelfDiscs3D.forEach((group, i) => {
-      const angle = carouselAngle + (i / count) * Math.PI * 2;
+      const { rowIndex, colIndex, rowSize } = group.userData;
+      // 各段ごとに半径を決定（段内の枚数に応じてコンパクトに）
+      const radius = Math.max(5, rowSize * 1.1);
+
+      const angle = carouselAngle + (colIndex / rowSize) * Math.PI * 2;
       group.position.x = Math.sin(angle) * radius;
       group.position.z = Math.cos(angle) * radius - radius + 3;
-      group.position.y = Math.sin(time * 0.8 + i * 0.7) * 0.15;
 
+      // 段ごとのY位置: アクティブ段以降は下方向に積まれる
+      // (rowIndex - activeRowFloat) が正 → 下、負 → 上
+      const dRow = rowIndex - activeRowFloat;
+      const baseY = -dRow * ROW_GAP;
+      const bobble = Math.sin(time * 0.8 + i * 0.7) * 0.15;
+      group.position.y = baseY + bobble;
+
+      // ディスクの自転
       group.children[0].rotation.y += 0.005;
       group.children.forEach((c, ci) => { if (ci > 0) c.rotation.y = group.children[0].rotation.y; });
 
+      // 段距離による表示制御
+      const absD = Math.abs(dRow);
+      group.visible = absD < 1.8;
+      if (!group.visible) return;
+
+      // 段距離スケール: アクティブ段(d=0)で1.0、隣接段(d=1)で0.5
+      const rowScale = THREE.MathUtils.lerp(1.0, 0.5, Math.min(absD, 1.0));
+
+      // 奥行きスケール（既存ロジック）
       const z = group.position.z;
-      const scale = THREE.MathUtils.clamp(
+      const depthScale = THREE.MathUtils.clamp(
         THREE.MathUtils.mapLinear(z, -radius * 2, 5, 0.5, 1.0), 0.45, 1.0
       );
-      group.scale.setScalar(hoveredDisc === group ? scale * 1.15 : scale);
+
+      const finalScale = depthScale * rowScale;
+      group.scale.setScalar(hoveredDisc === group ? finalScale * 1.15 : finalScale);
     });
   }
 
@@ -664,6 +722,8 @@
 
     if (autoRotate && !isDragging) targetCarouselAngle += 0.0015;
     carouselAngle += (targetCarouselAngle - carouselAngle) * 0.225;
+    // 段切替のスムーズ補間
+    activeRowFloat += (activeRow - activeRowFloat) * 0.12;
     layoutCarousel(time);
 
     // Twinkle stars
@@ -680,22 +740,84 @@
 
   function stopShelfAnim() { if (shelfAnimId) { cancelAnimationFrame(shelfAnimId); shelfAnimId = null; } }
 
+  // ===== 段切替 =====
+  function changeRow(delta) {
+    const target = activeRow + delta;
+    if (target < 0 || target >= totalRows) return false;
+    activeRow = target;
+    updateRowIndicator();
+    autoRotate = false;
+    clearTimeout(changeRow._t);
+    changeRow._t = setTimeout(() => { autoRotate = true; }, 3000);
+    return true;
+  }
+
+  function updateRowIndicator() {
+    const ind = document.getElementById('row-indicator');
+    if (!ind) return;
+    if (totalRows <= 1) {
+      ind.style.display = 'none';
+      ind.innerHTML = '';
+      return;
+    }
+    ind.style.display = '';
+    ind.innerHTML = '';
+    for (let i = 0; i < totalRows; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'row-dot' + (i === activeRow ? ' active' : '');
+      dot.setAttribute('data-row', i);
+      ind.appendChild(dot);
+    }
+  }
+
   // --- Interactions ---
   function canvasCoords(e) {
     const r = $('#shelf-canvas').getBoundingClientRect();
     return { x: ((e.clientX - r.left) / r.width) * 2 - 1, y: -((e.clientY - r.top) / r.height) * 2 + 1 };
   }
 
-  function onMouseDown(e) { isDragging = true; autoRotate = false; dragStartX = e.clientX; dragStartAngle = targetCarouselAngle; }
-  function onMouseUp() { isDragging = false; setTimeout(() => { autoRotate = true; }, 3000); }
-  function onMouseLeave() { isDragging = false; hoveredDisc = null; tooltip.classList.add('hidden'); setTimeout(() => { autoRotate = true; }, 1000); }
+  function onMouseDown(e) {
+    isDragging = true;
+    autoRotate = false;
+    dragStartX = e.clientX;
+    dragStartY = e.clientY;
+    dragStartAngle = targetCarouselAngle;
+    dragLockAxis = null;
+  }
+  function onMouseUp(e) {
+    if (dragLockAxis === 'y' && e) {
+      const dy = e.clientY - dragStartY;
+      if (dy < -SWIPE_THRESHOLD) changeRow(1);       // 上スワイプ→次段
+      else if (dy > SWIPE_THRESHOLD) changeRow(-1);  // 下スワイプ→前段
+    }
+    isDragging = false;
+    dragLockAxis = null;
+    setTimeout(() => { autoRotate = true; }, 3000);
+  }
+  function onMouseLeave() {
+    isDragging = false;
+    dragLockAxis = null;
+    hoveredDisc = null;
+    tooltip.classList.add('hidden');
+    setTimeout(() => { autoRotate = true; }, 1000);
+  }
 
   function onMouseMove(e) {
     const c = canvasCoords(e);
     shelfMouse.set(c.x, c.y);
 
     if (isDragging) {
-      targetCarouselAngle = dragStartAngle + (e.clientX - dragStartX) * 0.005;
+      // 軸ロック判定
+      if (!dragLockAxis) {
+        const dx = Math.abs(e.clientX - dragStartX);
+        const dy = Math.abs(e.clientY - dragStartY);
+        if (dx > AXIS_LOCK_THRESHOLD || dy > AXIS_LOCK_THRESHOLD) {
+          dragLockAxis = dx > dy ? 'x' : 'y';
+        }
+      }
+      if (dragLockAxis === 'x') {
+        targetCarouselAngle = dragStartAngle + (e.clientX - dragStartX) * 0.005;
+      }
       tooltip.classList.add('hidden');
       return;
     }
@@ -703,6 +825,7 @@
     shelfRaycaster.setFromCamera(shelfMouse, shelfCamera);
     let hit = null;
     for (const g of shelfDiscs3D) {
+      if (!g.visible) continue;
       if (shelfRaycaster.intersectObjects(g.children, true).length) { hit = g; break; }
     }
 
@@ -731,10 +854,12 @@
   }
 
   function onClick(e) {
-    if (Math.abs(e.clientX - dragStartX) > 5) return;
+    if (Math.abs(e.clientX - dragStartX) > 5 || Math.abs(e.clientY - dragStartY) > 5) return;
+    if (dragLockAxis) return; // ドラッグ操作後はクリック扱いしない
     const c = canvasCoords(e);
     shelfRaycaster.setFromCamera(new THREE.Vector2(c.x, c.y), shelfCamera);
     for (const g of shelfDiscs3D) {
+      if (!g.visible) continue;
       if (shelfRaycaster.intersectObjects(g.children, true).length) {
         openDisc(g.userData.discId);
         return;
@@ -742,31 +867,58 @@
     }
   }
 
-  let touchStartX = 0;
+  let touchStartX = 0, touchStartY = 0;
   function onTouchStart(e) {
     if (e.touches.length === 1) {
       isDragging = true; autoRotate = false;
       touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
       dragStartX = touchStartX;
+      dragStartY = touchStartY;
       dragStartAngle = targetCarouselAngle;
+      dragLockAxis = null;
     }
   }
   function onTouchMove(e) {
     if (isDragging && e.touches.length === 1) {
       e.preventDefault();
-      targetCarouselAngle = dragStartAngle + (e.touches[0].clientX - dragStartX) * 0.005;
+      const tx = e.touches[0].clientX;
+      const ty = e.touches[0].clientY;
+      // 軸ロック判定
+      if (!dragLockAxis) {
+        const dx = Math.abs(tx - dragStartX);
+        const dy = Math.abs(ty - dragStartY);
+        if (dx > AXIS_LOCK_THRESHOLD || dy > AXIS_LOCK_THRESHOLD) {
+          dragLockAxis = dx > dy ? 'x' : 'y';
+        }
+      }
+      if (dragLockAxis === 'x') {
+        targetCarouselAngle = dragStartAngle + (tx - dragStartX) * 0.005;
+      }
     }
   }
   function onTouchEnd(e) {
-    if (isDragging && Math.abs((e.changedTouches[0]?.clientX || 0) - touchStartX) < 10) {
-      const t = e.changedTouches[0];
+    const t = e.changedTouches[0];
+    const tx = t?.clientX || 0;
+    const ty = t?.clientY || 0;
+
+    if (dragLockAxis === 'y') {
+      // 縦スワイプ → 段切替
+      const dy = ty - touchStartY;
+      if (dy < -SWIPE_THRESHOLD) changeRow(1);
+      else if (dy > SWIPE_THRESHOLD) changeRow(-1);
+    } else if (isDragging && !dragLockAxis &&
+               Math.abs(tx - touchStartX) < 10 && Math.abs(ty - touchStartY) < 10) {
+      // タップ → ディスク選択
       const c = canvasCoords(t);
       shelfRaycaster.setFromCamera(new THREE.Vector2(c.x, c.y), shelfCamera);
       for (const g of shelfDiscs3D) {
+        if (!g.visible) continue;
         if (shelfRaycaster.intersectObjects(g.children, true).length) { openDisc(g.userData.discId); break; }
       }
     }
     isDragging = false;
+    dragLockAxis = null;
     setTimeout(() => { autoRotate = true; }, 3000);
   }
 

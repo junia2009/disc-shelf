@@ -354,6 +354,40 @@ body {
 }
 .disc-tooltip.hidden { opacity: 0; }
 
+/* ---------- Row Indicator (シリンダー段ナビ) ---------- */
+.row-indicator {
+  position: absolute;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 20;
+  pointer-events: none;
+}
+.row-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  transition: all 0.35s cubic-bezier(.4, 0, .2, 1);
+}
+.row-dot.active {
+  background: #fff;
+  border-color: #fff;
+  transform: scale(1.5);
+  box-shadow:
+    0 0 8px rgba(255, 255, 255, 0.95),
+    0 0 18px rgba(108, 99, 255, 0.7),
+    0 0 30px rgba(108, 99, 255, 0.4);
+}
+@media (max-width: 600px) {
+  .row-indicator { right: 10px; gap: 8px; }
+  .row-dot { width: 8px; height: 8px; }
+}
+
 .disc-tooltip .tt-name {
   font-family: 'Orbitron', sans-serif;
   font-size: .8rem; font-weight: 700;
