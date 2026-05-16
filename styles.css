@@ -195,6 +195,8 @@ body {
   color: var(--text-primary);
   min-height: 100vh;
   overflow-x: hidden;
+  /* iOS PWA: ホームインジケーター分の余白を確保 */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
 /* ---------- Aurora Background ---------- */
@@ -576,7 +578,15 @@ body {
 
 /* ---------- Responsive ---------- */
 @media (max-width: 640px) {
-  #app { padding: 1rem; }
-  #shelf-3d-container { height: 400px; }
+  #app { padding: 0.75rem; }
+  #shelf-3d-container { height: 360px; }
   .tagline { display: none; }
+  /* タイトル・余白を詰める */
+  .section-title-large { font-size: 1.8rem; margin-bottom: 0.75rem; }
+  .shelf-header { margin-bottom: 0.75rem; }
+  .section-sub { margin-bottom: 0.75rem; }
+  /* フッター */
+  #site-footer { padding: 0.75rem 1rem; }
+  /* 段インジケーター */
+  .row-indicator { padding: 5px 0 2px; }
 }
