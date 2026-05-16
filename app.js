@@ -603,7 +603,27 @@
     group.add(sheen);
 
     group.rotation.x = Math.PI * 0.08;
+
+    // ===== 各マテリアルに透明度の動的制御を仕込む =====
+    // baseOpacity を覚えておき、後段で row フェード倍率を掛けて適用する
+    const matRefs = [];
+    group.traverse(child => {
+      if (child.material) {
+        child.material.transparent = true;
+        matRefs.push({ mat: child.material, base: child.material.opacity });
+      }
+    });
+    group.userData.matRefs = matRefs;
     return group;
+  }
+
+  // 段フェード倍率（0.0〜1.0）を適用
+  function setDiscRowOpacity(group, factor) {
+    const refs = group.userData.matRefs;
+    if (!refs) return;
+    for (let i = 0; i < refs.length; i++) {
+      refs[i].mat.opacity = refs[i].base * factor;
+    }
   }
 
   function buildShelfDiscs() {
@@ -676,6 +696,22 @@
 
     shelfDiscs3D.forEach((group, i) => {
       const { rowIndex, colIndex, rowSize } = group.userData;
+      // 段距離（実数）。0=アクティブ、±1=隣接、絶対値が大きいほど遠い段
+      const dRow = rowIndex - activeRowFloat;
+      const absD = Math.abs(dRow);
+
+      // ===== 段フェード: 0距離=完全表示、1距離以上=完全透明 =====
+      // ease-out で急速にフェードアウト（中間で両段が薄く見える時間を短縮）
+      const t = Math.min(absD, 1);
+      const rowOpacity = (1 - t) * (1 - t); // quadratic ease-out
+
+      // 不可視ならレンダリング停止して終了
+      group.visible = rowOpacity > 0.03;
+      if (!group.visible) {
+        setDiscRowOpacity(group, 0);
+        return;
+      }
+
       // 各段ごとに半径を決定（段内の枚数に応じてコンパクトに）
       const radius = Math.max(5, rowSize * 1.1);
 
@@ -683,9 +719,7 @@
       group.position.x = Math.sin(angle) * radius;
       group.position.z = Math.cos(angle) * radius - radius + 3;
 
-      // 段ごとのY位置: アクティブ段以降は下方向に積まれる
-      // (rowIndex - activeRowFloat) が正 → 下、負 → 上
-      const dRow = rowIndex - activeRowFloat;
+      // Y位置: 切替中に上段は上へ、下段は下へスライド（フェードと連動）
       const baseY = -dRow * ROW_GAP;
       const bobble = Math.sin(time * 0.8 + i * 0.7) * 0.15;
       group.position.y = baseY + bobble;
@@ -694,13 +728,8 @@
       group.children[0].rotation.y += 0.005;
       group.children.forEach((c, ci) => { if (ci > 0) c.rotation.y = group.children[0].rotation.y; });
 
-      // 段距離による表示制御
-      const absD = Math.abs(dRow);
-      group.visible = absD < 1.8;
-      if (!group.visible) return;
-
-      // 段距離スケール: アクティブ段(d=0)で1.0、隣接段(d=1)で0.5
-      const rowScale = THREE.MathUtils.lerp(1.0, 0.5, Math.min(absD, 1.0));
+      // スケールはアクティブ段でフル、フェード時はわずかに縮小
+      const rowScale = THREE.MathUtils.lerp(0.85, 1.0, rowOpacity);
 
       // 奥行きスケール（既存ロジック）
       const z = group.position.z;
@@ -710,6 +739,9 @@
 
       const finalScale = depthScale * rowScale;
       group.scale.setScalar(hoveredDisc === group ? finalScale * 1.15 : finalScale);
+
+      // マテリアル透明度を適用
+      setDiscRowOpacity(group, rowOpacity);
     });
   }
 
