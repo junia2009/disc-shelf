@@ -1072,12 +1072,22 @@
     const btnListView = document.getElementById('btn-list-view');
     const btnBackShelf = document.getElementById('btn-back-shelf');
     const discListContainer = document.getElementById('disc-list-container');
-
+    const listSearch = document.getElementById('list-search');
     const shelfViewSection = document.getElementById('shelf-view');
+
+    // カテゴリの表示順と色定義
+    const CATEGORY_ORDER = ['セキュリティ', 'ゲーム', 'その他'];
+    const CATEGORY_COLOR = {
+      'セキュリティ': '#4fc3f7',
+      'ゲーム':       '#ef9a9a',
+      'その他':       '#fff176',
+    };
+
     function showListView() {
       shelfViewSection.classList.remove('active');
       listView.classList.add('active');
-      renderDiscList();
+      if (listSearch) listSearch.value = '';
+      renderDiscList('');
     }
     function hideListView() {
       listView.classList.remove('active');
@@ -1087,29 +1097,79 @@
     if (btnListView) btnListView.addEventListener('click', showListView);
     if (btnBackShelf) btnBackShelf.addEventListener('click', hideListView);
 
-    function renderDiscList() {
+    // 検索ボックス: 入力のたびに再描画
+    if (listSearch) {
+      listSearch.addEventListener('input', () => renderDiscList(listSearch.value));
+    }
+
+    function renderDiscList(query = '') {
       if (!discListContainer) return;
       discListContainer.innerHTML = '';
-      const ul = document.createElement('ul');
-      ul.className = 'disc-list';
-      DISCS.forEach(disc => {
-        const li = document.createElement('li');
-        li.className = 'disc-list-item';
-        li.style.borderLeft = `8px solid ${disc.color}`;
-        li.innerHTML = `
-          <div class="disc-list-main">
-            <span class="disc-list-name">${disc.name}</span>
-            <span class="disc-list-desc">${disc.description}</span>
-          </div>
-          <div class="disc-list-links">
-            <a href="${disc.url}" target="_blank" rel="noopener" class="disc-list-link">アプリを開く</a>
-            <a href="${disc.repo}" target="_blank" rel="noopener" class="disc-list-link">リポジトリ</a>
-          </div>
-        `;
-        ul.appendChild(li);
+
+      const q = query.trim().toLowerCase();
+
+      // フィルタリング
+      const filtered = q
+        ? DISCS.filter(d =>
+            d.name.toLowerCase().includes(q) ||
+            d.description.toLowerCase().includes(q) ||
+            d.tags.some(t => t.toLowerCase().includes(q))
+          )
+        : DISCS;
+
+      // ヒット0件
+      if (!filtered.length) {
+        const msg = document.createElement('p');
+        msg.className = 'list-no-results';
+        msg.textContent = `「${query}」に一致するアプリは見つかりませんでした`;
+        discListContainer.appendChild(msg);
+        return;
+      }
+
+      // カテゴリごとにグループ化して順番通りに出力
+      const grouped = Object.fromEntries(CATEGORY_ORDER.map(c => [c, []]));
+      filtered.forEach(d => {
+        const cat = grouped[d.category] ? d.category : 'その他';
+        grouped[cat].push(d);
       });
-      discListContainer.appendChild(ul);
-    }
+
+      CATEGORY_ORDER.forEach(cat => {
+        const discs = grouped[cat];
+        if (!discs.length) return;
+
+        // カテゴリヘッダー
+        const header = document.createElement('div');
+        header.className = 'list-category-header';
+        header.innerHTML = `<span class="list-category-badge" style="background:${CATEGORY_COLOR[cat]}22;color:${CATEGORY_COLOR[cat]};border-color:${CATEGORY_COLOR[cat]}55">${esc(cat)}</span><span class="list-category-count">${discs.length}</span>`;
+        discListContainer.appendChild(header);
+
+        // ディスクカード一覧
+        const ul = document.createElement('ul');
+        ul.className = 'disc-list';
+        discs.forEach(disc => {
+          const li = document.createElement('li');
+          li.className = 'disc-list-item';
+          li.style.setProperty('--disc-color', disc.color);
+          li.style.borderLeft = `4px solid ${disc.color}`;
+          li.innerHTML = `
+            <div class="disc-list-main">
+              <div class="disc-list-title-row">
+                <span class="disc-list-dot" style="background:${disc.color};box-shadow:0 0 6px ${disc.color}88"></span>
+                <span class="disc-list-name">${esc(disc.name)}</span>
+              </div>
+              <span class="disc-list-desc">${esc(disc.description)}</span>
+              <div class="disc-list-tags">${disc.tags.map(t => `<span class="disc-list-tag">#${esc(t)}</span>`).join('')}</div>
+            </div>
+            <div class="disc-list-links">
+              <a href="${disc.url}" target="_blank" rel="noopener" class="disc-list-link disc-list-link--launch" style="border-color:${disc.color}66;color:${disc.color}">▶ 起動</a>
+              <a href="${disc.repo}" target="_blank" rel="noopener" class="disc-list-link disc-list-link--repo">⟨/⟩ リポジトリ</a>
+            </div>
+          `;
+          ul.appendChild(li);
+        });
+        discListContainer.appendChild(ul);
+      });
+    } // end renderDiscList
 
   initShelfScene();
 })();

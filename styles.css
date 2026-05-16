@@ -52,7 +52,123 @@
 }
 .list-header {
   text-align: center;
-  margin-bottom: 1.5rem;
+  margin-bottom: 1.2rem;
+}
+
+/* ---------- 検索バー ---------- */
+.list-search-wrapper {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  width: 100%;
+  max-width: 420px;
+  margin-top: 0.75rem;
+}
+.list-search-icon {
+  position: absolute;
+  left: 0.9rem;
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.4);
+  pointer-events: none;
+  line-height: 1;
+}
+.list-search {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.4rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.14);
+  border-radius: 24px;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: 'Noto Sans JP', sans-serif;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
+  -webkit-appearance: none;
+}
+.list-search:focus {
+  border-color: var(--accent);
+  background: rgba(108,99,255,0.1);
+  box-shadow: 0 0 0 3px rgba(108,99,255,0.18);
+}
+.list-search::placeholder { color: rgba(255,255,255,0.3); }
+/* Chrome の ✕ ボタンを白くする */
+.list-search::-webkit-search-cancel-button {
+  filter: invert(1) opacity(0.5);
+  cursor: pointer;
+}
+
+/* ---------- カテゴリヘッダー ---------- */
+.list-category-header {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  max-width: 600px;
+  margin: 1.6rem auto 0.4rem;
+  padding: 0 0.2rem;
+}
+.list-category-badge {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  padding: 0.2rem 0.65rem;
+  border-radius: 20px;
+  border: 1px solid;
+}
+.list-category-count {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+/* ---------- ディスクカード（リスト版） ---------- */
+.disc-list-title-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.disc-list-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.disc-list-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-top: 0.3rem;
+}
+.disc-list-tag {
+  font-size: 0.68rem;
+  color: var(--text-muted);
+  background: rgba(255,255,255,0.06);
+  padding: 0.1rem 0.45rem;
+  border-radius: 4px;
+}
+.disc-list-link--launch {
+  border: 1px solid;
+  border-radius: 6px;
+  padding: 0.2rem 0.6rem;
+  text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 700;
+  transition: opacity 0.2s;
+}
+.disc-list-link--launch:hover { opacity: 0.75; }
+.disc-list-link--repo {
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.disc-list-link--repo:hover { color: var(--text-secondary); }
+
+/* ---------- 検索ゼロ件 ---------- */
+.list-no-results {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem 1rem;
+  font-size: 0.95rem;
 }
 
 #list-view {

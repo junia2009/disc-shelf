@@ -62,7 +62,11 @@
       <section id="list-view" class="view">
         <div class="list-header">
           <h2 class="section-title">アプリ一覧</h2>
-          <p class="section-sub">全ディスクをリストで表示</p>
+          <div class="list-search-wrapper">
+            <span class="list-search-icon">⌕</span>
+            <input type="search" id="list-search" class="list-search"
+              placeholder="名前・説明・タグで検索…" autocomplete="off" />
+          </div>
         </div>
         <div id="disc-list-container"></div>
         <button id="btn-back-shelf" class="btn-back-shelf">戻る</button>
