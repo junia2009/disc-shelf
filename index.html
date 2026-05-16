@@ -112,7 +112,7 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').then(reg => {
+        navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(reg => {
           // 起動のたびに新SWの有無をチェック（iOS PWAでの更新を確実にする）
           reg.update();
 
