@@ -1102,6 +1102,14 @@
       listSearch.addEventListener('input', () => renderDiscList(listSearch.value));
     }
 
+    // iOS: リスト内をタップしたとき、キーボードが出ていれば先に閉じる
+    // → ズーム戻しによるレイアウト移動の前に blur() を済ませ、起動リンクを1タップで確実に押せるようにする
+    if (discListContainer && listSearch) {
+      discListContainer.addEventListener('touchstart', () => {
+        if (document.activeElement === listSearch) listSearch.blur();
+      }, { passive: true });
+    }
+
     function renderDiscList(query = '') {
       if (!discListContainer) return;
       discListContainer.innerHTML = '';

@@ -79,9 +79,10 @@
   border: 1px solid rgba(255,255,255,0.14);
   border-radius: 24px;
   color: #fff;
-  font-size: 0.95rem;
+  font-size: 1rem; /* ≥16px: iOSの自動ズームを防ぐ */
   font-family: 'Noto Sans JP', sans-serif;
   outline: none;
+  touch-action: manipulation; /* 300msタップ遅延を除去 */
   transition: border-color 0.2s, background 0.2s, box-shadow 0.2s;
   -webkit-appearance: none;
 }
