@@ -108,7 +108,19 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch((err) => {
+        navigator.serviceWorker.register('./sw.js').then(reg => {
+          // 起動のたびに新SWの有無をチェック（iOS PWAでの更新を確実にする）
+          reg.update();
+
+          // 新SWが制御を奪取した瞬間にリロード → 新キャッシュを即座に反映
+          let reloading = false;
+          navigator.serviceWorker.addEventListener('controllerchange', () => {
+            if (!reloading) {
+              reloading = true;
+              window.location.reload();
+            }
+          });
+        }).catch(err => {
           console.warn('SW registration failed:', err);
         });
       });
