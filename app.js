@@ -178,7 +178,7 @@ const VERSION = 'v1.2.3';
       id: 'planet_pazzle',
       name: 'プラネットパズル',
       description: '惑星タイルを3枚揃えて消すマッチ3パズルゲーム。全405枚クリアを目指せ。',
-      color: '#5C6BC0',
+      color: '#CE93D8',
       url: 'https://junia2009.github.io/planet-puzzle/',
       repo: 'https://github.com/junia2009/planet-puzzle',
       tags: ['JS', 'game'],
