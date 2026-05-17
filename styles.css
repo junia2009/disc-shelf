@@ -314,6 +314,17 @@ body {
   overflow-x: hidden;
   /* iOS PWA: ホームインジケーター分の余白を確保 */
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* 長押し時のiOSコールアウト(コピー/調べる/翻訳…)と虫眼鏡を抑制 */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* 入力欄だけはテキスト選択を許可 */
+input, textarea, [contenteditable="true"] {
+  -webkit-user-select: text;
+  user-select: text;
+  -webkit-touch-callout: default;
 }
 
 /* ---------- Aurora Background ---------- */

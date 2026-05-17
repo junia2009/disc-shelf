@@ -1,7 +1,7 @@
 /* ============================================
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
-const VERSION = 'v1.2.2';
+const VERSION = 'v1.2.3';
 
 (() => {
   // 現在選択中のカテゴリ
@@ -446,6 +446,8 @@ const VERSION = 'v1.2.2';
     canvas.addEventListener('touchmove', onTouchMove, { passive: false });
     canvas.addEventListener('touchend', onTouchEnd);
     canvas.addEventListener('wheel', onWheel, { passive: false });
+    // 長押し時のコンテキストメニュー(iOS/Android)を抑制
+    canvas.addEventListener('contextmenu', e => e.preventDefault());
     window.addEventListener('resize', onResize);
 
     animateShelf();
