@@ -228,7 +228,7 @@ const VERSION = 'v1.2.3';
       id: 'othello',
       name: 'オセロ',
       description: '定番ボードゲーム、オセロ。',
-      color: '#424242',
+      color: '#0077b6',
       url: 'https://junia2009.github.io/Othello/',
       repo: 'https://github.com/junia2009/Othello',
       tags: ['HTML', 'game'],
