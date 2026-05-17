@@ -1,7 +1,7 @@
 /* ============================================
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
-const VERSION = 'v1.2.1';
+const VERSION = 'v1.2.2';
 
 (() => {
   // 現在選択中のカテゴリ
@@ -337,6 +337,46 @@ const VERSION = 'v1.2.1';
   let activeRowFloat = 0;       // アニメーション用補間値
   let totalRows = 1;            // 総段数
   let rowDistribution = [];     // 各段の枚数 [6, 5] 等
+
+  // ===== 長押しツールチップ（モバイル用） =====
+  const LONG_PRESS_MS = 500;
+  const LONG_PRESS_MOVE_TOLERANCE = 10;  // この距離(px)以上動いたら長押しキャンセル
+  let longPressTimer = null;
+  let longPressTriggered = false;
+
+  function clearLongPress() {
+    if (longPressTimer) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
+
+  function showTooltipAtPoint(clientX, clientY) {
+    const r = $('#shelf-canvas').getBoundingClientRect();
+    const nx = ((clientX - r.left) / r.width) * 2 - 1;
+    const ny = -((clientY - r.top) / r.height) * 2 + 1;
+    shelfRaycaster.setFromCamera(new THREE.Vector2(nx, ny), shelfCamera);
+    for (const g of shelfDiscs3D) {
+      if (!g.visible) continue;
+      if (shelfRaycaster.intersectObjects(g.children, true).length) {
+        const disc = DISCS.find(d => d.id === g.userData.discId);
+        if (!disc) return false;
+        tooltip.innerHTML = `
+          <div class="tt-name" style="color:${disc.color}">${esc(disc.name)}</div>
+          <div class="tt-desc">${esc(disc.description.slice(0, 50))}…</div>
+          <div class="tt-hint">タップで起動</div>`;
+        const rect = $('#shelf-3d-container').getBoundingClientRect();
+        const left = Math.max(8, Math.min(rect.width - 230, clientX - rect.left - 110));
+        const top  = Math.max(8, clientY - rect.top - 110);
+        tooltip.style.left = left + 'px';
+        tooltip.style.top  = top  + 'px';
+        tooltip.classList.remove('hidden');
+        if (navigator.vibrate) navigator.vibrate(15);
+        return true;
+      }
+    }
+    return false;
+  }
 
   function initShelfScene() {
     const container = $('#shelf-3d-container');
@@ -911,6 +951,14 @@ const VERSION = 'v1.2.1';
       dragStartY = touchStartY;
       dragStartAngle = targetCarouselAngle;
       dragLockAxis = null;
+
+      // 長押しタイマー開始（指がほぼ動かなければ500msでツールチップを出す）
+      longPressTriggered = false;
+      clearLongPress();
+      const sx = touchStartX, sy = touchStartY;
+      longPressTimer = setTimeout(() => {
+        if (showTooltipAtPoint(sx, sy)) longPressTriggered = true;
+      }, LONG_PRESS_MS);
     }
   }
   function onTouchMove(e) {
@@ -918,6 +966,20 @@ const VERSION = 'v1.2.1';
       e.preventDefault();
       const tx = e.touches[0].clientX;
       const ty = e.touches[0].clientY;
+
+      // 動きを検知したら長押しは取り消し（出ていれば閉じる）
+      if (longPressTimer || longPressTriggered) {
+        const mdx = Math.abs(tx - touchStartX);
+        const mdy = Math.abs(ty - touchStartY);
+        if (mdx > LONG_PRESS_MOVE_TOLERANCE || mdy > LONG_PRESS_MOVE_TOLERANCE) {
+          clearLongPress();
+          if (longPressTriggered) {
+            tooltip.classList.add('hidden');
+            longPressTriggered = false;
+          }
+        }
+      }
+
       // 軸ロック判定
       if (!dragLockAxis) {
         const dx = Math.abs(tx - dragStartX);
@@ -932,9 +994,20 @@ const VERSION = 'v1.2.1';
     }
   }
   function onTouchEnd(e) {
+    clearLongPress();
     const t = e.changedTouches[0];
     const tx = t?.clientX || 0;
     const ty = t?.clientY || 0;
+
+    // 長押しでツールチップが出た場合は起動せず、1.5秒後にツールチップを閉じる
+    if (longPressTriggered) {
+      setTimeout(() => tooltip.classList.add('hidden'), 1500);
+      longPressTriggered = false;
+      isDragging = false;
+      dragLockAxis = null;
+      setTimeout(() => { autoRotate = true; }, 3000);
+      return;
+    }
 
     if (dragLockAxis === 'y') {
       // 縦スワイプ → 段切替
