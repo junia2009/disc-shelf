@@ -384,6 +384,16 @@ const VERSION = 'v1.2.4';
       tags: ['React', 'tool', 'PWA'],
       category: 'その他',
     },
+    {
+      id: 'totte',
+      name: 'Totte',
+      description: '日用品のパッケージ写真とメーカー情報を家族で共有し、買い間違いを防ぐアプリ。',
+      color: '#FF4081',
+      url: 'https://used-goods-list.web.app/',
+      repo: 'https://github.com/junia2009/used_good_list',
+      tags: ['React', 'Firebase', 'PWA'],
+      category: 'その他',
+    },
     // --- 今後アプリを作るたびに追加 ---
   ];
 
