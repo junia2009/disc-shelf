@@ -1,7 +1,7 @@
 /* ============================================
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
-const VERSION = 'v1.2.5';
+const VERSION = 'v1.2.6';
 
 (() => {
   // 現在選択中のカテゴリ
@@ -402,7 +402,7 @@ const VERSION = 'v1.2.5';
       url: 'https://junia2009.github.io/aquarium2/',
       repo: 'https://github.com/junia2009/aquarium2',
       tags: ['Three.js', 'WebGL', 'PWA'],
-      category: 'その他',
+      category: 'ゲーム',
     },
     {
       id: 'fire-works',
@@ -412,7 +412,7 @@ const VERSION = 'v1.2.5';
       url: 'https://junia2009.github.io/fire_works/',
       repo: 'https://github.com/junia2009/fire_works',
       tags: ['WebGL2', 'simulator', 'PWA'],
-      category: 'その他',
+      category: 'ゲーム',
     },
     // --- 今後アプリを作るたびに追加 ---
   ];
