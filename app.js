@@ -1,7 +1,7 @@
 /* ============================================
    DISC SHELF — Portal App Logic (Three.js 3D)
    ============================================ */
-const VERSION = 'v1.2.4';
+const VERSION = 'v1.2.5';
 
 (() => {
   // 現在選択中のカテゴリ
@@ -295,12 +295,12 @@ const VERSION = 'v1.2.4';
       category: 'その他',
     },
     {
-      id: 'catan-city-knight',
-      name: 'カタン 都市と騎士',
-      description: 'Three.js製3Dカタン。基本／都市と騎士／ドラゴンの島の3モードとCPU・オンライン対戦に対応。',
+      id: 'hexfrontier',
+      name: 'Hexfrontier',
+      description: 'Three.js製3Dヘックス開拓ゲーム。基本／都市と騎士／漁師たち／航海者たち／ドラゴンの島の5ルールをCPU戦・オンライン対戦で遊べる。',
       color: '#EF6C00',
-      url: 'https://junia2009.github.io/catan_city_knight/',
-      repo: 'https://github.com/junia2009/catan_city_knight',
+      url: 'https://junia2009.github.io/hexfrontier/',
+      repo: 'https://github.com/junia2009/hexfrontier',
       tags: ['Three.js', 'game', 'PWA'],
       category: 'ゲーム',
     },
@@ -392,6 +392,26 @@ const VERSION = 'v1.2.4';
       url: 'https://used-goods-list.web.app/',
       repo: 'https://github.com/junia2009/used_good_list',
       tags: ['React', 'Firebase', 'PWA'],
+      category: 'その他',
+    },
+    {
+      id: 'aquarium2',
+      name: '大水槽',
+      description: '水の光学現象・生物の形・泳ぎ方をすべてコードで手続き生成した、Three.js製バーチャル水族館。',
+      color: '#0288D1',
+      url: 'https://junia2009.github.io/aquarium2/',
+      repo: 'https://github.com/junia2009/aquarium2',
+      tags: ['Three.js', 'WebGL', 'PWA'],
+      category: 'その他',
+    },
+    {
+      id: 'fire-works',
+      name: '花火シミュレーター',
+      description: '空気抵抗・風・星の燃焼・黒体放射・音速まで実測値でモデル化した、WebGL2製の打ち上げ花火シミュレーター。',
+      color: '#FF3D00',
+      url: 'https://junia2009.github.io/fire_works/',
+      repo: 'https://github.com/junia2009/fire_works',
+      tags: ['WebGL2', 'simulator', 'PWA'],
       category: 'その他',
     },
     // --- 今後アプリを作るたびに追加 ---
